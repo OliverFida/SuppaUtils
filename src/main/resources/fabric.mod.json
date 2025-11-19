@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "suppautils",
+  "version": "${version}",
+  "name": "SuppaUtils",
+  "description": "Utility mod for server hosters.",
+  "authors": [
+    "Xortix"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/OliverFida/qscinitials"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/suppautils/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.xortix.suppautils.main.Main"
+    ]
+  },
+  "mixins": [
+    "suppautils.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.3",
+    "minecraft": "~1.21.9",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
