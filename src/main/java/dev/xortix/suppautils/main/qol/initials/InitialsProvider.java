@@ -1,4 +1,4 @@
-package dev.xortix.suppautils.main.initials;
+package dev.xortix.suppautils.main.qol.initials;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

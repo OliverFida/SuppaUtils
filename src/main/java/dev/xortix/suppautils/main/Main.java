@@ -1,7 +1,7 @@
 package dev.xortix.suppautils.main;
 
-import dev.xortix.suppautils.main.afk.AfkProvider;
-import dev.xortix.suppautils.main.initials.InitialsProvider;
+import dev.xortix.suppautils.main.qol.afk.AfkProvider;
+import dev.xortix.suppautils.main.qol.initials.InitialsProvider;
 import dev.xortix.suppautils.main.log.Logger;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;

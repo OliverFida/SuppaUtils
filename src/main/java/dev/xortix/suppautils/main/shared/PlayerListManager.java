@@ -1,8 +1,8 @@
 package dev.xortix.suppautils.main.shared;
 
 import dev.xortix.suppautils.main.Main;
-import dev.xortix.suppautils.main.afk.AfkProvider;
-import dev.xortix.suppautils.main.initials.InitialsProvider;
+import dev.xortix.suppautils.main.qol.afk.AfkProvider;
+import dev.xortix.suppautils.main.qol.initials.InitialsProvider;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;

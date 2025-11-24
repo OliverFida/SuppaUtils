@@ -1,4 +1,4 @@
-package dev.xortix.suppautils.main.afk;
+package dev.xortix.suppautils.main.qol.afk;
 
 import dev.xortix.suppautils.main.shared.PlayerListManager;
 import net.minecraft.server.network.ServerPlayerEntity;
