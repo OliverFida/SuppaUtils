@@ -1,5 +1,7 @@
 package dev.xortix.suppautils.main;
 
+import dev.xortix.suppautils.main.config.ConfigProvider;
+import dev.xortix.suppautils.main.db.DBProvider;
 import dev.xortix.suppautils.main.qol.afk.AfkProvider;
 import dev.xortix.suppautils.main.qol.initials.InitialsProvider;
 import dev.xortix.suppautils.main.log.Logger;
@@ -23,6 +25,12 @@ public class Main implements ModInitializer {
     @Override
     public void onInitialize() {
         Logger.log(Logger.LogCategory.GLOBAL, Logger.LogType.INFO, "Initializing...");
+
+        // DB
+        DBProvider.init();
+
+        // Config
+        ConfigProvider.init();
 
         // SERVER
         ServerLifecycleEvents.SERVER_STARTED.register(server -> SERVER = server);

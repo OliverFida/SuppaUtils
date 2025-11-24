@@ -13,6 +13,9 @@ public class Logger {
         switch (category) {
             case GLOBAL:
                 break;
+            case DATABASE:
+                finalMessage += "[Database] ";
+                break;
             case INITIALS:
                 finalMessage += "[Initials] ";
                 break;
@@ -26,6 +29,12 @@ public class Logger {
         finalMessage += message;
 
         switch (type) {
+            case CRITICAL:
+                LOGGER.error(finalMessage);
+                if (Main.SERVER != null)
+                    Main.SERVER.stop(false);
+                // OFDO: Stop server in every possible way
+                break;
             case ERROR:
                 LOGGER.error(finalMessage);
                 break;
@@ -44,6 +53,7 @@ public class Logger {
     }
 
     public enum LogType {
+        CRITICAL,
         ERROR,
         WARNING,
         INFO,
@@ -52,6 +62,7 @@ public class Logger {
 
     public enum LogCategory {
         GLOBAL,
+        DATABASE,
 
         INITIALS,
         AFK
