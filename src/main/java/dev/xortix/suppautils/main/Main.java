@@ -7,6 +7,7 @@ import dev.xortix.suppautils.main.qol.initials.InitialsProvider;
 import dev.xortix.suppautils.main.log.Logger;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
@@ -42,6 +43,8 @@ public class Main implements ModInitializer {
         // AFK
         ServerTickEvents.END_WORLD_TICK.register(AfkProvider::checkAllPlayers);
         ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> AfkProvider.updateLastActive(sender.getUuid()));
+        ServerPlayerEvents.JOIN.register(AfkProvider::resetTracking);
+        ServerPlayerEvents.LEAVE.register(AfkProvider::resetTracking);
 
         // Commands
         CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(

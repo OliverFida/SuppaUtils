@@ -54,6 +54,16 @@ public class AfkProvider {
         }
     }
 
+    public static void resetTracking(ServerPlayerEntity player) {
+        try {
+            LAST_ACTIVE.remove(player.getUuid());
+            LAST_POSITION.remove(player.getUuid());
+            LAST_ROTATION.remove(player.getUuid());
+            PLAYERS_AFK.remove(player.getUuid());
+        } catch (Exception ignored) {
+        }
+    }
+
     private static boolean checkIsAfk(UUID uuid, Vec3d newPosition, Vec3d newRotation) {
         if (checkHasMoved(uuid, newPosition, newRotation)) updateLastActive(uuid);
 
