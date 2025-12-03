@@ -1,7 +1,9 @@
 package dev.xortix.suppautils.main.config;
 
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.db.DBProvider;
 import dev.xortix.suppautils.main.log.Logger;
+import dev.xortix.suppautils.main.shared.FeaturesManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,16 +30,30 @@ public class ConfigProvider {
         }
     }
 
+    public static void storeEntry(ConfigEntry entry) {
+        try {
+            Statement st = DBProvider.getCONNECTION().createStatement();
+
+            updateValue(st, entry);
+        } catch (Exception ex) {
+            Logger.log(Logger.LogCategory.GLOBAL, Logger.LogType.CRITICAL, ex.getMessage());
+        }
+    }
+
     private static void initEntries() {
+        FeatureProviderBase feature;
+        ConfigEntry entry;
+
         // QOL Initials
-        ConfigEntry temp = new BooleanConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_INITIALS, "enabled", false);
-        CONFIG_ENTRIES.put(temp.Id(), temp);
+//        ConfigEntry entry = new BooleanConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_INITIALS, "enabled", false);
+//        CONFIG_ENTRIES.put(entry.Id(), entry);
 
         // QOL AFK
-        temp = new BooleanConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_AFK, "enabled", false);
-        CONFIG_ENTRIES.put(temp.Id(), temp);
-        temp = new IntegerConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_AFK, "timeout", 300);
-        CONFIG_ENTRIES.put(temp.Id(), temp);
+        feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_AFK);
+        entry = new BooleanConfigEntry(feature, "enabled", false);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new IntegerConfigEntry(feature, "timeout", 300);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
     }
 
     private static void checkAgainstDB(Statement st, ConfigEntry entry) throws SQLException {
@@ -59,7 +75,8 @@ public class ConfigProvider {
         return getValue(st, entry);
     }
 
-    // private static ResultSet updateValue(Statement st, ConfigEntry entry) throws SQLException {
-        // OFDO: updateValue
-    // }
+     private static ResultSet updateValue(Statement st, ConfigEntry entry) throws SQLException {
+        st.execute("UPDATE Config SET Value=\"" + entry.valueToString() + "\" WHERE Id=\"" + entry.Id() + "\";");
+        return getValue(st, entry);
+     }
 }

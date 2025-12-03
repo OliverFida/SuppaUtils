@@ -19,7 +19,7 @@ public class InitialsProvider {
 
     public static void applyInitials() {
         try {
-            if (!((BooleanConfigEntry)ConfigProvider.CONFIG_ENTRIES_NEW.get("qol;initials;enabled")).Value) return;
+            if (!((BooleanConfigEntry)ConfigProvider.CONFIG_ENTRIES.get("qol;initials;enabled")).Value) return;
 
             new Thread(InitialsProvider::executeLoadInitials).start();
         } catch (Exception ignored) {

@@ -1,36 +1,26 @@
-package dev.xortix.suppautils.main;
+package dev.xortix.suppautils.main.shared;
 
-import dev.xortix.suppautils.main.config.BooleanConfigEntry;
-import dev.xortix.suppautils.main.config.ConfigProvider;
-import dev.xortix.suppautils.main.qol.afk.AfkFeatureProvider;
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
+import dev.xortix.suppautils.main.qol.afk.QolAfkFeatureProvider;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FeaturesManager {
-    private static final AfkFeatureProvider _afkFeatureProvider = new AfkFeatureProvider();
+    public static Map<FEATURE, FeatureProviderBase> Features = new HashMap<FEATURE, FeatureProviderBase>();
 
-    public static void initFeatures() {
-        _afkFeatureProvider.init();
-    }
+    public static void init() {
+        FeatureProviderBase feature;
 
-    public static void enableFeature(FEATURE feature) {
-        String configEntryId = getConfigEntryId(feature);
-        if (configEntryId == null) return;
+        Features.clear();
 
-        BooleanConfigEntry configEntry = (BooleanConfigEntry)ConfigProvider.CONFIG_ENTRIES.get(configEntryId);
-        if (configEntry == null) return;
+//        feature = new QolInitialsFeatureProvider();
+//        Features.put(FEATURE.QOL_AFK, feature);
+//        feature.init();
 
-        configEntry.Value = true;
-        ConfigProvider.storeEntry(configEntry);
-    }
-
-    private static String getConfigEntryId(FEATURE feature) {
-        switch (feature) {
-            case QOL_INITIALS:
-                return "qol;initials;enabled";
-            case QOL_AFK:
-                return "qol;afk;enabled";
-        }
-
-        return null;
+        feature = new QolAfkFeatureProvider();
+        Features.put(FEATURE.QOL_AFK, feature);
+        feature.init();
     }
 
     public enum FEATURE {

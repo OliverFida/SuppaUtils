@@ -1,12 +1,10 @@
 package dev.xortix.suppautils.main.config;
 
-public class DoubleConfigEntry extends ConfigEntry<Double> {
-    public DoubleConfigEntry(CATEGORY category, FEATURE feature, String key, Double defaultValue) {
-        super(category, feature, key, defaultValue);
-    }
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
 
-    public DoubleConfigEntry(FEATURE feature, String key, Double defaultValue) {
-        super(feature, key, defaultValue);
+public class DoubleConfigEntry extends ConfigEntry<Double> {
+    public DoubleConfigEntry(FeatureProviderBase featureProvider, String key, Double defaultValue) {
+        super(featureProvider, key, defaultValue);
     }
 
     @Override

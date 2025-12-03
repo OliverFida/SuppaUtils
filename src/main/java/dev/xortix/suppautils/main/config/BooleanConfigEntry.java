@@ -1,12 +1,10 @@
 package dev.xortix.suppautils.main.config;
 
-public class BooleanConfigEntry extends ConfigEntry<Boolean> {
-    public BooleanConfigEntry(CATEGORY category, FEATURE feature, String key, Boolean defaultValue) {
-        super(category, feature, key, defaultValue);
-    }
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
 
-    public BooleanConfigEntry(FEATURE feature, String key, Boolean defaultValue) {
-        super(feature, key, defaultValue);
+public class BooleanConfigEntry extends ConfigEntry<Boolean> {
+    public BooleanConfigEntry(FeatureProviderBase featureProvider, String key, Boolean defaultValue) {
+        super(featureProvider, key, defaultValue);
     }
 
     @Override

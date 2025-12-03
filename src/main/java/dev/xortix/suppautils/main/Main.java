@@ -1,23 +1,12 @@
 package dev.xortix.suppautils.main;
 
-import dev.xortix.suppautils.main.config.BooleanConfigEntry;
 import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.db.DBProvider;
-import dev.xortix.suppautils.main.qol.afk.AfkProvider;
-import dev.xortix.suppautils.main.qol.initials.InitialsProvider;
 import dev.xortix.suppautils.main.log.Logger;
+import dev.xortix.suppautils.main.shared.FeaturesManager;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
-import static net.minecraft.server.command.CommandManager.literal;
 
 public class Main implements ModInitializer {
     public static final String MOD_ID = "SuppaUtils";
@@ -32,42 +21,39 @@ public class Main implements ModInitializer {
         // DB
         DBProvider.init();
 
-        // Config
-        ConfigProvider.init();
-
         // SERVER
         ServerLifecycleEvents.SERVER_STARTED.register(server -> SERVER = server);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> SERVER = null);
 
-        // Initials
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> InitialsProvider.applyInitials());
+        // Features
+        FeaturesManager.init();
 
-        // AFK
-        ServerTickEvents.END_WORLD_TICK.register(AfkProvider::checkAllPlayers);
-        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> AfkProvider.updateLastActive(sender.getUuid()));
-        ServerPlayerEvents.JOIN.register(AfkProvider::resetTracking);
-        ServerPlayerEvents.LEAVE.register(AfkProvider::resetTracking);
+        // Config
+        ConfigProvider.init();
+
+        // Initials
+//        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> InitialsProvider.applyInitials());
 
         // Commands
-        CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(
-                literal("afk")
-                        .executes(ctx -> {
-                            if (!((BooleanConfigEntry) ConfigProvider.CONFIG_ENTRIES_NEW.get("qol;afk;enabled")).Value) {
-                                // Feature disabled
-
-                                ctx.getSource().sendFeedback(
-                                        () -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."),
-                                        false
-                                );
-
-                                return 1;
-                            }
-
-                            ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            AfkProvider.setAfk(player);
-
-                            return 1;
-                        })
-        )));
+//        CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(
+//                literal("afk")
+//                        .executes(ctx -> {
+//                            if (!((BooleanConfigEntry) ConfigProvider.CONFIG_ENTRIES_NEW.get("qol;afk;enabled")).Value) {
+//                                // Feature disabled
+//
+//                                ctx.getSource().sendFeedback(
+//                                        () -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."),
+//                                        false
+//                                );
+//
+//                                return 1;
+//                            }
+//
+//                            ServerPlayerEntity player = ctx.getSource().getPlayer();
+//                            AfkProvider.setAfk(player);
+//
+//                            return 1;
+//                        })
+//        )));
     }
 }

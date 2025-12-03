@@ -1,4 +1,5 @@
-package dev.xortix.suppautils.main.shared;
+package dev.xortix.suppautils.main.shared.commands;
 
 public class CommandsManager {
+
 }

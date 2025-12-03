@@ -1,12 +1,10 @@
 package dev.xortix.suppautils.main.config;
 
-public class IntegerConfigEntry extends ConfigEntry<Integer> {
-    public IntegerConfigEntry(CATEGORY category, FEATURE feature, String key, Integer defaultValue) {
-        super(category, feature, key, defaultValue);
-    }
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
 
-    public IntegerConfigEntry(FEATURE feature, String key, Integer defaultValue) {
-        super(feature, key, defaultValue);
+public class IntegerConfigEntry extends ConfigEntry<Integer> {
+    public IntegerConfigEntry(FeatureProviderBase featureProvider, String key, Integer defaultValue) {
+        super(featureProvider, key, defaultValue);
     }
 
     @Override

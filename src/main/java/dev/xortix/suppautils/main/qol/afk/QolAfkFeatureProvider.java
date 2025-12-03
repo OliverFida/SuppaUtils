@@ -1,8 +1,11 @@
 package dev.xortix.suppautils.main.qol.afk;
 
-import dev.xortix.suppautils.main.config.BooleanConfigEntry;
-import dev.xortix.suppautils.main.config.ConfigProvider;
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
+import dev.xortix.suppautils.main.config.IntegerConfigEntry;
 import dev.xortix.suppautils.main.shared.PlayerListManager;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
@@ -15,18 +18,37 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class AfkProvider {
-    private static final long AFK_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
-    // private static final long AFK_TIME = 5 * 1000; // DEBUG 10 seconds
+public class QolAfkFeatureProvider extends FeatureProviderBase {
+    @Override
+    public String getConfigCategory() {
+        return "qol";
+    }
 
-    private static final Map<UUID, Long> LAST_ACTIVE = new HashMap<>();
-    private static final Map<UUID, Vec3d> LAST_POSITION = new HashMap<>();
-    private static final Map<UUID, Vec3d> LAST_ROTATION = new HashMap<>();
-    public static final ArrayList<UUID> PLAYERS_AFK = new ArrayList<>();
+    @Override
+    public String getConfigFeature() {
+        return "afk";
+    }
 
-    public static void checkAllPlayers(ServerWorld world) {
+    @Override
+    public void init() {
+        ServerTickEvents.END_WORLD_TICK.register(this::checkAllPlayers);
+        ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> updateLastActive(sender.getUuid()));
+        ServerPlayerEvents.JOIN.register(this::resetTracking);
+        ServerPlayerEvents.LEAVE.register(this::resetTracking);
+    }
+
+    private IntegerConfigEntry getConfigTimeout() {
+        return (IntegerConfigEntry) getConfigEntry("timeout");
+    };
+
+    private final Map<UUID, Long> LAST_ACTIVE = new HashMap<>();
+    private final Map<UUID, Vec3d> LAST_POSITION = new HashMap<>();
+    private final Map<UUID, Vec3d> LAST_ROTATION = new HashMap<>();
+    public final ArrayList<UUID> PLAYERS_AFK = new ArrayList<>();
+
+    public void checkAllPlayers(ServerWorld world) {
         try {
-            if (!((BooleanConfigEntry) ConfigProvider.CONFIG_ENTRIES.get("qol;afk;enabled")).Value) return;
+            if (!getIsEnabled()) return;
 
             for (ServerPlayerEntity player : world.getPlayers()) {
                 UUID uuid = player.getUuid();
@@ -44,21 +66,21 @@ public class AfkProvider {
         }
     }
 
-    public static void updateLastActive(UUID uuid) {
+    public void updateLastActive(UUID uuid) {
         try {
             LAST_ACTIVE.put(uuid, System.currentTimeMillis());
         } catch (Exception ignored) {
         }
     }
 
-    public static void setAfk(ServerPlayerEntity player) {
+    public void setAfk(ServerPlayerEntity player) {
         try {
-            LAST_ACTIVE.put(player.getUuid(), System.currentTimeMillis() - AFK_TIME);
+            LAST_ACTIVE.put(player.getUuid(), System.currentTimeMillis() - getConfigTimeout().Value);
         } catch (Exception ignored) {
         }
     }
 
-    public static void resetTracking(ServerPlayerEntity player) {
+    public void resetTracking(ServerPlayerEntity player) {
         try {
             LAST_ACTIVE.remove(player.getUuid());
             LAST_POSITION.remove(player.getUuid());
@@ -68,14 +90,14 @@ public class AfkProvider {
         }
     }
 
-    private static boolean checkIsAfk(UUID uuid, Vec3d newPosition, Vec3d newRotation) {
+    private boolean checkIsAfk(UUID uuid, Vec3d newPosition, Vec3d newRotation) {
         if (checkHasMoved(uuid, newPosition, newRotation)) updateLastActive(uuid);
 
         long now = System.currentTimeMillis();
-        return now - LAST_ACTIVE.get(uuid) >= AFK_TIME;
+        return now - LAST_ACTIVE.get(uuid) >= getConfigTimeout().Value;
     }
 
-    private static boolean checkHasMoved(UUID uuid, Vec3d newPosition, Vec3d newRotation) {
+    private boolean checkHasMoved(UUID uuid, Vec3d newPosition, Vec3d newRotation) {
         if (LAST_POSITION.containsKey(uuid) && LAST_POSITION.get(uuid).equals(newPosition)) {
             // Position same as before
 
@@ -91,7 +113,7 @@ public class AfkProvider {
         return true;
     }
 
-    private static void setAfk(UUID uuid, ServerWorld world, ServerPlayerEntity player) {
+    private void setAfk(UUID uuid, ServerWorld world, ServerPlayerEntity player) {
         if (PLAYERS_AFK.contains(uuid)) return;
 
         PLAYERS_AFK.add(uuid);
@@ -99,7 +121,7 @@ public class AfkProvider {
         PlayerListManager.updatePlayerListEntryForPlayer(player);
     }
 
-    private static void setActive(UUID uuid, ServerWorld world, ServerPlayerEntity player) {
+    private void setActive(UUID uuid, ServerWorld world, ServerPlayerEntity player) {
         if (!PLAYERS_AFK.contains(uuid)) return;
 
         PLAYERS_AFK.remove(uuid);
@@ -107,7 +129,7 @@ public class AfkProvider {
         PlayerListManager.updatePlayerListEntryForPlayer(player);
     }
 
-    private static MutableText getMessage(ServerPlayerEntity player, String messageAfterUsername) {
+    private MutableText getMessage(ServerPlayerEntity player, String messageAfterUsername) {
         MutableText message = Text.empty();
         message.append(Text.literal(player.getName().getString() + " " + messageAfterUsername)).formatted(Formatting.GRAY);
         return message;
