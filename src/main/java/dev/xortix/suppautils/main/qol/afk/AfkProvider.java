@@ -1,5 +1,7 @@
 package dev.xortix.suppautils.main.qol.afk;
 
+import dev.xortix.suppautils.main.config.BooleanConfigEntry;
+import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.shared.PlayerListManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -24,6 +26,8 @@ public class AfkProvider {
 
     public static void checkAllPlayers(ServerWorld world) {
         try {
+            if (!((BooleanConfigEntry) ConfigProvider.CONFIG_ENTRIES.get("qol;afk;enabled")).Value) return;
+
             for (ServerPlayerEntity player : world.getPlayers()) {
                 UUID uuid = player.getUuid();
                 Vec3d position = player.getEntityPos();

@@ -6,26 +6,19 @@ import dev.xortix.suppautils.main.log.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ConfigProvider {
-    private static final List<ConfigEntry> CONFIG_ENTRIES = new ArrayList<>() {
-        {
-            // QOL Initials
-            add(new BooleanConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_INITIALS, "enabled", false));
-
-            // QOL AFK
-            add(new BooleanConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_AFK, "enabled", false));
-            add(new IntegerConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_AFK, "timeout", 300));
-        }
-    };
+    public static Map<String, ConfigEntry> CONFIG_ENTRIES = new HashMap<String, ConfigEntry>();
 
     public static void init() {
         try {
+            initEntries();
+
             Statement st = DBProvider.getCONNECTION().createStatement();
 
-            for (ConfigEntry entry : CONFIG_ENTRIES) {
+            for (ConfigEntry entry : CONFIG_ENTRIES.values()) {
                 checkAgainstDB(st, entry);
             }
 
@@ -33,6 +26,18 @@ public class ConfigProvider {
         } catch (Exception ex) {
             Logger.log(Logger.LogCategory.GLOBAL, Logger.LogType.CRITICAL, ex.getMessage());
         }
+    }
+
+    private static void initEntries() {
+        // QOL Initials
+        ConfigEntry temp = new BooleanConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_INITIALS, "enabled", false);
+        CONFIG_ENTRIES.put(temp.Id(), temp);
+
+        // QOL AFK
+        temp = new BooleanConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_AFK, "enabled", false);
+        CONFIG_ENTRIES.put(temp.Id(), temp);
+        temp = new IntegerConfigEntry(ConfigEntry.CATEGORY.QOL, ConfigEntry.FEATURE.QOL_AFK, "timeout", 300);
+        CONFIG_ENTRIES.put(temp.Id(), temp);
     }
 
     private static void checkAgainstDB(Statement st, ConfigEntry entry) throws SQLException {

@@ -3,6 +3,8 @@ package dev.xortix.suppautils.main.qol.initials;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import dev.xortix.suppautils.main.Main;
+import dev.xortix.suppautils.main.config.BooleanConfigEntry;
+import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.PlayerListManager;
 
@@ -17,6 +19,8 @@ public class InitialsProvider {
 
     public static void applyInitials() {
         try {
+            if (!((BooleanConfigEntry)ConfigProvider.CONFIG_ENTRIES_NEW.get("qol;initials;enabled")).Value) return;
+
             new Thread(InitialsProvider::executeLoadInitials).start();
         } catch (Exception ignored) {
         }

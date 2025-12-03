@@ -1,5 +1,6 @@
 package dev.xortix.suppautils.main;
 
+import dev.xortix.suppautils.main.config.BooleanConfigEntry;
 import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.db.DBProvider;
 import dev.xortix.suppautils.main.qol.afk.AfkProvider;
@@ -14,6 +15,7 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -50,6 +52,17 @@ public class Main implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(
                 literal("afk")
                         .executes(ctx -> {
+                            if (!((BooleanConfigEntry) ConfigProvider.CONFIG_ENTRIES_NEW.get("qol;afk;enabled")).Value) {
+                                // Feature disabled
+
+                                ctx.getSource().sendFeedback(
+                                        () -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."),
+                                        false
+                                );
+
+                                return 1;
+                            }
+
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
                             AfkProvider.setAfk(player);
 
