@@ -17,6 +17,12 @@ public class DBProvider {
         try {
             Path dbPath = FabricLoader.getInstance().getConfigDir().resolve("suppautils.db");
 
+            try {
+                Class.forName("org.sqlite.JDBC");
+            } catch (Exception ex) {
+                throw new Exception("SQLite driver check failed");
+            }
+
             CONNECTION = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toAbsolutePath());
             Logger.log(Logger.LogCategory.DATABASE, Logger.LogType.INFO, "Config Database connected at \"" + dbPath + "\"");
 
