@@ -11,7 +11,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.config.*;
-import dev.xortix.suppautils.main.log.Logger;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -35,7 +34,8 @@ public class SuppaCommand extends CommandBase {
     public SuppaCommand(TYPE type, FeatureProviderBase featureProvider, String key, ArgumentType<?> argumentType, String valueDescription) {
         _type = type;
         _featureProvider = featureProvider;
-        if (type == TYPE.CONFIG && (key.isBlank() || argumentType == null || valueDescription.isBlank())) throw new IllegalArgumentException("key or valueDescription");
+        if (type == TYPE.CONFIG && (key.isBlank() || argumentType == null || valueDescription.isBlank()))
+            throw new IllegalArgumentException("key or valueDescription");
         _key = key;
         _argumentType = argumentType;
         _valueDescription = valueDescription;
@@ -63,14 +63,14 @@ public class SuppaCommand extends CommandBase {
         // Feature
         LiteralArgumentBuilder<ServerCommandSource> featureBuilder;
         if (innerBuilder == null) {
-             featureBuilder = literal(_featureProvider.getConfigFeature()).requires(source -> source.hasPermissionLevel(2)).executes(executes);
+            featureBuilder = literal(_featureProvider.getConfigFeature()).requires(source -> source.hasPermissionLevel(2)).executes(executes);
         } else {
             featureBuilder = literal(_featureProvider.getConfigFeature()).then(innerBuilder);
         }
 
         // Type
         LiteralArgumentBuilder<ServerCommandSource> typeBuilder;
-        String typeString = switch(_type) {
+        String typeString = switch (_type) {
             case ENABLE -> "enable";
             case DISABLE -> "disable";
             case CONFIG -> "config";
@@ -104,17 +104,13 @@ public class SuppaCommand extends CommandBase {
     }
 
     private int executeDisableFeature(CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
-        try {
-            if (!_featureProvider.getIsEnabled()) {
-                serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§cFeature already disabled."), false);
-                return Command.SINGLE_SUCCESS;
-            }
-
-            _featureProvider.disable();
-            serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aFeature has been disabled."), false);
-        } catch (Exception ex) {
-            Logger.log(Logger.LogCategory.GLOBAL, Logger.LogType.ERROR, ex.getMessage());
+        if (!_featureProvider.getIsEnabled()) {
+            serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§cFeature already disabled."), false);
+            return Command.SINGLE_SUCCESS;
         }
+
+        _featureProvider.disable();
+        serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aFeature has been §cdisabled."), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -150,8 +146,6 @@ public class SuppaCommand extends CommandBase {
     }
 
     public enum TYPE {
-        ENABLE,
-        DISABLE,
-        CONFIG
+        ENABLE, DISABLE, CONFIG
     }
 }
