@@ -1,8 +1,11 @@
 package dev.xortix.suppautils.main.qol.afk;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.config.IntegerConfigEntry;
 import dev.xortix.suppautils.main.shared.PlayerListManager;
+import dev.xortix.suppautils.main.shared.commands.CommandsManager;
+import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
@@ -33,13 +36,26 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
     public void init() {
         ServerTickEvents.END_WORLD_TICK.register(this::checkAllPlayers);
         ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> updateLastActive(sender.getUuid()));
-        ServerPlayerEvents.JOIN.register(this::resetTracking);
-        ServerPlayerEvents.LEAVE.register(this::resetTracking);
+        ServerPlayerEvents.JOIN.register(player -> resetTracking(player.getUuid()));
+        ServerPlayerEvents.LEAVE.register(player -> resetTracking(player.getUuid()));
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this));
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this));
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "timeout", IntegerArgumentType.integer(10, 3600), "timeout"));
+    }
+
+    @Override
+    public void disable() {
+        super.disable();
+
+        ArrayList<UUID> uuids = new ArrayList<>(PLAYERS_AFK);
+        for (UUID uuid : uuids) {
+            resetTracking(uuid);
+        }
     }
 
     private IntegerConfigEntry getConfigTimeout() {
         return (IntegerConfigEntry) getConfigEntry("timeout");
-    };
+    }
 
     private final Map<UUID, Long> LAST_ACTIVE = new HashMap<>();
     private final Map<UUID, Vec3d> LAST_POSITION = new HashMap<>();
@@ -75,17 +91,18 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
 
     public void setAfk(ServerPlayerEntity player) {
         try {
-            LAST_ACTIVE.put(player.getUuid(), System.currentTimeMillis() - getConfigTimeout().Value);
+            LAST_ACTIVE.put(player.getUuid(), System.currentTimeMillis() - getConfigTimeout().Value*1000);
         } catch (Exception ignored) {
         }
     }
 
-    public void resetTracking(ServerPlayerEntity player) {
+    public void resetTracking(UUID uuid) {
         try {
-            LAST_ACTIVE.remove(player.getUuid());
-            LAST_POSITION.remove(player.getUuid());
-            LAST_ROTATION.remove(player.getUuid());
-            PLAYERS_AFK.remove(player.getUuid());
+            LAST_ACTIVE.remove(uuid);
+            LAST_POSITION.remove(uuid);
+            LAST_ROTATION.remove(uuid);
+            PLAYERS_AFK.remove(uuid);
+            PlayerListManager.updatePlayerList();
         } catch (Exception ignored) {
         }
     }
@@ -94,7 +111,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         if (checkHasMoved(uuid, newPosition, newRotation)) updateLastActive(uuid);
 
         long now = System.currentTimeMillis();
-        return now - LAST_ACTIVE.get(uuid) >= getConfigTimeout().Value;
+        return now - LAST_ACTIVE.get(uuid) >= getConfigTimeout().Value*1000;
     }
 
     private boolean checkHasMoved(UUID uuid, Vec3d newPosition, Vec3d newRotation) {

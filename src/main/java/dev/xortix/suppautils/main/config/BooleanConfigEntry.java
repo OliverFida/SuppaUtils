@@ -13,9 +13,9 @@ public class BooleanConfigEntry extends ConfigEntry<Boolean> {
     }
 
     @Override
-    protected Boolean stringToValue(String stringValue) {
+    protected void stringToValue(String stringValue) {
         String input = stringValue.trim().toLowerCase();
 
-        return input.equals("true");
+        Value = input.equals("true");
     }
 }

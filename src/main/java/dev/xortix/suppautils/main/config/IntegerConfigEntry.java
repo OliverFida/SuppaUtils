@@ -13,7 +13,7 @@ public class IntegerConfigEntry extends ConfigEntry<Integer> {
     }
 
     @Override
-    protected Integer stringToValue(String stringValue) {
-        return Integer.parseInt(stringValue);
+    protected void stringToValue(String stringValue) {
+        Value = Integer.parseInt(stringValue);
     }
 }

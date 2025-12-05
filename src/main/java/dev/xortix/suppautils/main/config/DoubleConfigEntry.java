@@ -13,7 +13,7 @@ public class DoubleConfigEntry extends ConfigEntry<Double> {
     }
 
     @Override
-    protected Double stringToValue(String stringValue) {
-        return Double.parseDouble(stringValue);
+    protected void stringToValue(String stringValue) {
+        Value = Double.parseDouble(stringValue);
     }
 }

@@ -6,6 +6,8 @@ import dev.xortix.suppautils.main.Main;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.PlayerListManager;
+import dev.xortix.suppautils.main.shared.commands.CommandsManager;
+import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
 import java.io.InputStreamReader;
@@ -28,6 +30,8 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
     @Override
     public void init() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> applyInitials());
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this));
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this));
     }
 
     public Map<String, String> INITIALS = Collections.emptyMap();

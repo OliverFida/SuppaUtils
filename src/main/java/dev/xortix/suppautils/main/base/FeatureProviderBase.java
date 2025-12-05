@@ -10,7 +10,7 @@ public abstract class FeatureProviderBase {
     public String getConfigEntryId(String key) {
         return getConfigCategory() + ";" + getConfigFeature() + ";" + key;
     }
-    protected ConfigEntry getConfigEntry(String key) {
+    public ConfigEntry<?> getConfigEntry(String key) {
         return ConfigProvider.CONFIG_ENTRIES.get(getConfigEntryId(key));
     }
     public boolean getIsEnabled() {
@@ -19,4 +19,14 @@ public abstract class FeatureProviderBase {
     }
 
     public abstract void init();
+    public void enable() {
+        BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
+        configEntry.Value = true;
+        ConfigProvider.storeEntry(configEntry);
+    }
+    public void disable() {
+        BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
+        configEntry.Value = false;
+        ConfigProvider.storeEntry(configEntry);
+    }
 }

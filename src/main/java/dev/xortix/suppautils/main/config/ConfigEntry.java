@@ -29,5 +29,5 @@ public abstract class ConfigEntry<T> {
     }
 
     protected abstract String valueToString();
-    protected abstract T stringToValue(String stringValue);
+    protected abstract void stringToValue(String stringValue);
 }
