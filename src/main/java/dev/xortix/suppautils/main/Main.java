@@ -31,9 +31,6 @@ public class Main implements ModInitializer {
         // Config
         ConfigProvider.init();
 
-        // Initials
-//        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> InitialsProvider.applyInitials());
-
         // Commands
 //        CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(
 //                literal("afk")

@@ -3,10 +3,10 @@ package dev.xortix.suppautils.main.qol.initials;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import dev.xortix.suppautils.main.Main;
-import dev.xortix.suppautils.main.config.BooleanConfigEntry;
-import dev.xortix.suppautils.main.config.ConfigProvider;
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.PlayerListManager;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -14,19 +14,34 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
-public class InitialsProvider {
-    public static Map<String, String> INITIALS = Collections.emptyMap();
+public class QolInitialsFeatureProvider extends FeatureProviderBase {
+    @Override
+    public String getConfigCategory() {
+        return "qol";
+    }
 
-    public static void applyInitials() {
+    @Override
+    public String getConfigFeature() {
+        return "initials";
+    }
+
+    @Override
+    public void init() {
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> applyInitials());
+    }
+
+    public Map<String, String> INITIALS = Collections.emptyMap();
+
+    public void applyInitials() {
         try {
-            if (!((BooleanConfigEntry)ConfigProvider.CONFIG_ENTRIES.get("qol;initials;enabled")).Value) return;
+            if (!getIsEnabled()) return;
 
-            new Thread(InitialsProvider::executeLoadInitials).start();
+            new Thread(this::executeLoadInitials).start();
         } catch (Exception ignored) {
         }
     }
 
-    private static void executeLoadInitials() {
+    private void executeLoadInitials() {
         try {
             URL url = (new URI(Main.INITIALS_CONFIG_URL)).toURL();
 
