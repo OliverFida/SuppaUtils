@@ -32,6 +32,34 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> applyInitials());
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this));
+//        CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("add")
+//                .then(argument("player", GameProfileArgumentType.gameProfile())
+//                        .then(argument("initials", StringArgumentType.word())
+//                                .requires(source -> source.hasPermissionLevel(2))
+//                                .executes(ctx -> {
+//                                    //OFDO
+//                                    applyInitials();
+//
+//                                    return Command.SINGLE_SUCCESS;
+//                                })
+//                        )
+//                )
+//        ));
+    }
+
+    @Override
+    public void enable() {
+        super.enable();
+
+        applyInitials();
+    }
+
+    @Override
+    public void disable() {
+        super.disable();
+
+        INITIALS.clear();
+        PlayerListManager.updatePlayerList();
     }
 
     public Map<String, String> INITIALS = Collections.emptyMap();
