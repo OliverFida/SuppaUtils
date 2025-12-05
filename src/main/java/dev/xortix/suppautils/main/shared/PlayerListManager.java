@@ -1,8 +1,8 @@
 package dev.xortix.suppautils.main.shared;
 
 import dev.xortix.suppautils.main.Main;
-import dev.xortix.suppautils.main.afk.AfkProvider;
-import dev.xortix.suppautils.main.initials.InitialsProvider;
+import dev.xortix.suppautils.main.qol.afk.QolAfkFeatureProvider;
+import dev.xortix.suppautils.main.qol.initials.QolInitialsFeatureProvider;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -35,10 +35,12 @@ public class PlayerListManager {
         MutableText customName = Text.empty();
 
         // AFK
-        if (AfkProvider.PLAYERS_AFK.contains(player.getUuid())) customName.append("[AFK]").formatted(Formatting.GRAY);
+        QolAfkFeatureProvider qolAfkFeatureProvider = (QolAfkFeatureProvider) FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_AFK);
+        if (qolAfkFeatureProvider.PLAYERS_AFK.contains(player.getUuid())) customName.append("[AFK]").formatted(Formatting.GRAY);
 
         // INITIALS
-        String initials = InitialsProvider.INITIALS.get(username);
+        QolInitialsFeatureProvider qolInitialsFeatureProvider = (QolInitialsFeatureProvider) FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_INITIALS);
+        String initials = qolInitialsFeatureProvider.INITIALS.get(username);
         if (initials != null) customName.append("[" + initials + "]");
 
         // Username

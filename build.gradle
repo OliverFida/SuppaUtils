@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version "${loom_version}"
     id 'maven-publish'
+    id 'com.gradleup.shadow' version "${shadow_version}"
 }
 
 version = project.mod_version
@@ -11,13 +12,11 @@ base {
 }
 
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
-    maven { url = "https://maven.terraformersmc.com/" }
-    maven { url = 'https://maven.shedaniel.me/' }
+    mavenCentral()
+
+    maven {
+        url = "https://maven.terraformersmc.com/"
+    }
 }
 
 loom {
@@ -33,22 +32,20 @@ loom {
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
+    // Minecraft
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_version}:v2"
 
-    // Fabric API. This is technically optional, but you probably want it anyway.
+    // Fabric
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // SQLite
+    implementation("org.xerial:sqlite-jdbc:${project.sqlite_version}")
 
     // Mod menu
     modImplementation("com.terraformersmc:modmenu:${modmenu_version}") {
         exclude group: 'net.fabricmc.fabric-api'
-    }
-
-    // Cloth Config
-    modApi("me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}") {
-        exclude(group: 'net.fabricmc.fabric-api')
     }
 }
 
@@ -65,9 +62,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
     withSourcesJar()
 
     sourceCompatibility = JavaVersion.VERSION_21
@@ -75,28 +69,14 @@ java {
 }
 
 jar {
-    // --- START MODIFICATION FOR CUSTOM FILENAME ---
-    // Construct the custom filename: baseName-version(-beta)(-dev)-mcVersion.jar
     def jarName = "${project.archives_base_name}-${project.mod_version}"
-
-    // Check if the 'beta' property is set to true and append '-beta' if it is
-    if (project.hasProperty('beta') && project.beta.toBoolean()) {
+    if (project.hasProperty('mod_beta') && project.mod_beta.toBoolean()) {
         jarName += "-beta"
     }
-
-    // Check if the 'devVersion' property is set to true and append '-dev' if it is
-    if (project.hasProperty('devVersion') && project.devVersion.toBoolean()) {
+    if (project.hasProperty('mod_dev_version') && project.mod_dev_version.toBoolean()) {
         jarName += "-dev"
     }
-
     archiveFileName = "${jarName}-mc${project.minecraft_version}.jar"
-
-    // Add properties to inputs (good practice for build caching)
-    inputs.property "modVersion", project.mod_version
-    inputs.property "minecraftVersion", project.minecraft_version
-    inputs.property "isBeta", project.hasProperty('beta') && project.beta.toBoolean()
-    inputs.property "isDev", project.hasProperty('devVersion') && project.devVersion.toBoolean()
-    // --- END MODIFICATION ---
 
     inputs.property "archivesName", project.base.archivesName
     from("LICENSE") {
@@ -104,15 +84,19 @@ jar {
     }
 }
 
-// --- NEW BLOCK: CONFIGURE THE FINAL JAR NAME ---
-// The remapJar task creates the final JAR in the 'libs' folder.
-// We explicitly set its name to match the custom name we defined in the 'jar' block.
+tasks.shadowJar {
+    archiveClassifier.set("")
+    mergeServiceFiles()
+
+    relocate("org.sqlite", "${project.maven_group}.libs.org.sqlite")
+}
+
 tasks.named("remapJar") {
+    dependsOn(tasks.shadowJar)
+    mustRunAfter(tasks.shadowJar)
     archiveFileName = jar.archiveFileName
 }
-// -----------------------------------------------
 
-// configure the maven publication
 publishing {
     publications {
         create("mavenJava", MavenPublication) {
@@ -121,11 +105,7 @@ publishing {
         }
     }
 
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
     repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
+        // optional
     }
 }
