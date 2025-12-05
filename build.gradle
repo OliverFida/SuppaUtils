@@ -4,6 +4,10 @@ plugins {
     id 'com.gradleup.shadow' version "${shadow_version}"
 }
 
+configurations {
+    shadowBundle
+}
+
 version = project.mod_version
 group = project.maven_group
 
@@ -42,6 +46,7 @@ dependencies {
 
     // SQLite
     implementation("org.xerial:sqlite-jdbc:${project.sqlite_version}")
+    shadowBundle("org.xerial:sqlite-jdbc:${project.sqlite_version}")
 
     // Mod menu
     modImplementation("com.terraformersmc:modmenu:${modmenu_version}") {
@@ -85,13 +90,14 @@ jar {
 }
 
 tasks.shadowJar {
+    configurations = [project.configurations.shadowBundle]
+
     archiveClassifier.set("")
     mergeServiceFiles()
-
-    relocate("org.sqlite", "${project.maven_group}.libs.org.sqlite")
 }
 
-tasks.named("remapJar") {
+tasks.remapJar {
+    inputFile.set(tasks.shadowJar.archiveFile)
     dependsOn(tasks.shadowJar)
     mustRunAfter(tasks.shadowJar)
     archiveFileName = jar.archiveFileName
