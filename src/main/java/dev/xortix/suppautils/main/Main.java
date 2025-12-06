@@ -12,7 +12,6 @@ import net.minecraft.server.MinecraftServer;
 
 public class Main implements ModInitializer {
     public static final String MOD_ID = "SuppaUtils";
-    public static final String INITIALS_CONFIG_URL = "https://unrekt.at/data/qsc-initials.json";
 
     public static MinecraftServer SERVER;
 
