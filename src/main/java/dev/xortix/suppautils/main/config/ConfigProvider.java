@@ -60,7 +60,7 @@ public class ConfigProvider {
     private static void checkAgainstDB(Statement st, ConfigEntry<?> entry) throws SQLException {
         ResultSet result = getValue(st, entry);
         if (!result.next()) {
-            insertValue(st, entry);
+            result = insertValue(st, entry);
             return;
         }
 
@@ -76,8 +76,8 @@ public class ConfigProvider {
         return getValue(st, entry);
     }
 
-     private static ResultSet updateValue(Statement st, ConfigEntry<?> entry) throws SQLException {
+    private static ResultSet updateValue(Statement st, ConfigEntry<?> entry) throws SQLException {
         st.execute("UPDATE Config SET Value=\"" + entry.valueToString() + "\" WHERE Id=\"" + entry.Id() + "\";");
         return getValue(st, entry);
-     }
+    }
 }
