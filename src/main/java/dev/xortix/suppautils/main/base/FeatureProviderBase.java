@@ -5,10 +5,11 @@ import com.mojang.brigadier.context.CommandContext;
 import dev.xortix.suppautils.main.config.BooleanConfigEntry;
 import dev.xortix.suppautils.main.config.ConfigEntry;
 import dev.xortix.suppautils.main.config.ConfigProvider;
+import dev.xortix.suppautils.main.shared.commands.CommandBuilderBase;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
-public abstract class FeatureProviderBase {
+public abstract class FeatureProviderBase extends CommandBuilderBase {
     public abstract String getConfigCategory();
 
     public abstract String getConfigFeature();
@@ -21,26 +22,26 @@ public abstract class FeatureProviderBase {
         return ConfigProvider.CONFIG_ENTRIES.get(getConfigEntryId(key));
     }
 
-    public boolean getIsEnabled() {
+    public boolean getIsEnabled() throws Exception {
         BooleanConfigEntry temp = (BooleanConfigEntry) getConfigEntry("enabled");
         return temp.Value;
     }
 
     public abstract void init();
 
-    public void enable() {
+    public void enable() throws Exception {
         BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
         configEntry.Value = true;
         ConfigProvider.storeEntry(configEntry);
     }
 
-    public void disable() {
+    public void disable() throws Exception {
         BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
         configEntry.Value = false;
         ConfigProvider.storeEntry(configEntry);
     }
 
-    protected int checkFeatureEnabledForCommnd(CommandContext<ServerCommandSource> ctx) {
+    protected int checkFeatureEnabledForCommand(CommandContext<ServerCommandSource> ctx) throws Exception {
         if (!getIsEnabled()) {
             ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
             return Command.SINGLE_SUCCESS;

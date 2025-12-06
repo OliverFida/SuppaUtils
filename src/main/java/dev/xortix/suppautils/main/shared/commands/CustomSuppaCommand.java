@@ -11,10 +11,16 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class CustomSuppaCommand extends CommandBase {
     private final FeatureProviderBase _featureProvider;
+    private final String _subFeature;
     private final LiteralArgumentBuilder<ServerCommandSource> _innerBuilder;
 
     public CustomSuppaCommand(FeatureProviderBase featureProvider, LiteralArgumentBuilder<ServerCommandSource> innerBuilder) {
+        this(featureProvider, null, innerBuilder);
+    }
+
+    public CustomSuppaCommand(FeatureProviderBase featureProvider, String subFeature, LiteralArgumentBuilder<ServerCommandSource> innerBuilder) {
         _featureProvider = featureProvider;
+        _subFeature = subFeature;
         _innerBuilder = innerBuilder;
     }
 
@@ -25,7 +31,10 @@ public class CustomSuppaCommand extends CommandBase {
 
     private LiteralArgumentBuilder<ServerCommandSource> getBuilder() {
         // Feature
-        LiteralArgumentBuilder<ServerCommandSource> featureBuilder = literal(_featureProvider.getConfigFeature()).then(_innerBuilder);
+        String feature = _featureProvider.getConfigFeature();
+        if (_subFeature != null) feature = _subFeature;
+
+        LiteralArgumentBuilder<ServerCommandSource> featureBuilder = literal(feature).then(_innerBuilder);
 
         return literal("suppa").then(featureBuilder);
     }

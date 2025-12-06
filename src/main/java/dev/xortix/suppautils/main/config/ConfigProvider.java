@@ -55,12 +55,25 @@ public class ConfigProvider {
         CONFIG_ENTRIES.put(entry.Id(), entry);
         entry = new IntegerConfigEntry(feature, "timeout", 300);
         CONFIG_ENTRIES.put(entry.Id(), entry);
+
+        // QOL Homes
+        feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_HOMES);
+        entry = new BooleanConfigEntry(feature, "enabled_homes", false);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new BooleanConfigEntry(feature, "enabled_spawn", false);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new IntegerConfigEntry(feature, "countdown", 5);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new IntegerConfigEntry(feature, "cooldown", 60);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new IntegerConfigEntry(feature, "maxHomes", 3);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
     }
 
     private static void checkAgainstDB(Statement st, ConfigEntry<?> entry) throws SQLException {
         ResultSet result = getValue(st, entry);
         if (!result.next()) {
-            result = insertValue(st, entry);
+            insertValue(st, entry);
             return;
         }
 

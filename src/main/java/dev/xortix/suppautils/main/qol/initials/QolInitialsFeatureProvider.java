@@ -59,23 +59,27 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
                         .then(argument("newInitials", StringArgumentType.word())
                                 .requires(source -> source.hasPermissionLevel(2))
                                 .executes(ctx -> {
-                                    Collection<PlayerConfigEntry> players = GameProfileArgumentType.getProfileArgument(ctx, "player");
-                                    if (players.isEmpty()) return Command.SINGLE_SUCCESS;
+                                    try {
+                                        Collection<PlayerConfigEntry> players = GameProfileArgumentType.getProfileArgument(ctx, "player");
+                                        if (players.isEmpty()) return Command.SINGLE_SUCCESS;
 
-                                    for (PlayerConfigEntry player : players) {
-                                        InitialsEntry currentInitials = Initials.get(player.id());
-                                        String newInitials = StringArgumentType.getString(ctx, "newInitials");
-                                        updateInitials(player.id(), currentInitials, newInitials);
+                                        for (PlayerConfigEntry player : players) {
+                                            InitialsEntry currentInitials = Initials.get(player.id());
+                                            String newInitials = StringArgumentType.getString(ctx, "newInitials");
+                                            updateInitials(player.id(), currentInitials, newInitials);
 
-                                        // New newInitials
-                                        if (currentInitials == null)
-                                            ctx.getSource().sendFeedback(() -> Text.literal("§aInitials added for player \"" + player.name() + "\"."), false);
-                                        // Update newInitials
-                                        if (currentInitials != null)
-                                            ctx.getSource().sendFeedback(() -> Text.literal("§aInitials updated for player \"" + player.name() + "\"."), false);
+                                            // New newInitials
+                                            if (currentInitials == null)
+                                                ctx.getSource().sendFeedback(() -> Text.literal("§aInitials added for player \"" + player.name() + "\"."), false);
+                                            // Update newInitials
+                                            if (currentInitials != null)
+                                                ctx.getSource().sendFeedback(() -> Text.literal("§aInitials updated for player \"" + player.name() + "\"."), false);
+                                        }
+
+                                        return Command.SINGLE_SUCCESS;
+                                    } catch (Exception ex) {
+                                        return handleCommandException(ex);
                                     }
-
-                                    return Command.SINGLE_SUCCESS;
                                 })
                         )
                 )
@@ -84,59 +88,71 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
                 .then(argument("player", GameProfileArgumentType.gameProfile())
                         .requires(source -> source.hasPermissionLevel(2))
                         .executes(ctx -> {
-                            Collection<PlayerConfigEntry> players = GameProfileArgumentType.getProfileArgument(ctx, "player");
-                            if (players.isEmpty()) return Command.SINGLE_SUCCESS;
+                            try {
+                                Collection<PlayerConfigEntry> players = GameProfileArgumentType.getProfileArgument(ctx, "player");
+                                if (players.isEmpty()) return Command.SINGLE_SUCCESS;
 
-                            for (PlayerConfigEntry player : players) {
-                                InitialsEntry currentInitials = Initials.get(player.id());
-                                if (currentInitials == null) {
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§cNo initials to delete for player \"" + player.name() + "\"."), false);
-                                    return Command.SINGLE_SUCCESS;
+                                for (PlayerConfigEntry player : players) {
+                                    InitialsEntry currentInitials = Initials.get(player.id());
+                                    if (currentInitials == null) {
+                                        ctx.getSource().sendFeedback(() -> Text.literal("§cNo initials to delete for player \"" + player.name() + "\"."), false);
+                                        return Command.SINGLE_SUCCESS;
+                                    }
+
+                                    removeInitials(player.id());
+                                    ctx.getSource().sendFeedback(() -> Text.literal("§aInitials §cremoved §afor player \"" + player.name() + "\"."), false);
                                 }
 
-                                removeInitials(player.id());
-                                ctx.getSource().sendFeedback(() -> Text.literal("§aInitials §cremoved §afor player \"" + player.name() + "\"."), false);
+                                return Command.SINGLE_SUCCESS;
+                            } catch (Exception ex) {
+                                return handleCommandException(ex);
                             }
-
-                            return Command.SINGLE_SUCCESS;
                         })
                 )
         ));
         CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("import")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(ctx -> {
-                    ctx.getSource().sendFeedback(() -> Text.literal("§8Trying to import initials. Please wait..."), false);
-                    int result = importFromFile();
+                    try {
+                        ctx.getSource().sendFeedback(() -> Text.literal("§8Trying to import initials. Please wait..."), false);
+                        int result = importFromFile();
 
-                    switch (result) {
-                        case 200:
-                            ctx.getSource().sendFeedback(() -> Text.literal("§aInitials updated from file."), false);
-                            break;
-                        case 400:
-                            ctx.getSource().sendFeedback(() -> Text.literal("§cImport failed! Please see log."), false);
-                            break;
-                        case 404:
-                            ctx.getSource().sendFeedback(() -> Text.literal("§cNo file found for import."), false);
-                            break;
+                        switch (result) {
+                            case 200:
+                                ctx.getSource().sendFeedback(() -> Text.literal("§aInitials updated from file."), false);
+                                break;
+                            case 400:
+                                ctx.getSource().sendFeedback(() -> Text.literal("§cImport failed! Please see log."), false);
+                                break;
+                            case 404:
+                                ctx.getSource().sendFeedback(() -> Text.literal("§cNo file found for import."), false);
+                                break;
+                        }
+
+                        return Command.SINGLE_SUCCESS;
+                    } catch (Exception ex) {
+                        return handleCommandException(ex);
                     }
-
-                    return Command.SINGLE_SUCCESS;
                 })
         ));
         CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("clear")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(ctx -> {
-                    List<InitialsEntry> tempEntries = new ArrayList<>(Initials.values());
-                    tempEntries.forEach(entry -> removeInitials(entry.getUuid()));
+                    try {
+                        List<InitialsEntry> tempEntries = new ArrayList<>(Initials.values());
+                        tempEntries.forEach(entry -> removeInitials(entry.getUuid()));
 
-                    ctx.getSource().sendFeedback(() -> Text.literal("§aInitials cleared."), false);
-                    return Command.SINGLE_SUCCESS;
+                        ctx.getSource().sendFeedback(() -> Text.literal("§aInitials cleared."), false);
+                        return Command.SINGLE_SUCCESS;
+                    } catch (Exception ex) {
+                        return handleCommandException(ex);
+                    }
                 })
         ));
     }
 
     @Override
-    public void enable() {
+    public void enable() throws Exception {
         super.enable();
 
         initFromDb();
@@ -144,7 +160,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
     }
 
     @Override
-    public void disable() {
+    public void disable() throws Exception {
         super.disable();
 
         Initials.clear();

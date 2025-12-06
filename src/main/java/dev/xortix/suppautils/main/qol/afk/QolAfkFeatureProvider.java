@@ -46,16 +46,20 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "timeout", IntegerArgumentType.integer(10, 3600), "timeout"));
         CommandsManager.addToRegistrationList(new FullyCustomCommand(literal("afk").executes(ctx -> {
-            if (checkFeatureEnabledForCommnd(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
+            try {
+                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
 
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            setAfk(player);
-            return Command.SINGLE_SUCCESS;
+                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                setAfk(player);
+                return Command.SINGLE_SUCCESS;
+            } catch (Exception ex) {
+                return handleCommandException(ex);
+            }
         })));
     }
 
     @Override
-    public void disable() {
+    public void disable() throws Exception {
         super.disable();
 
         ArrayList<UUID> uuids = new ArrayList<>(PLAYERS_AFK);
