@@ -3,6 +3,7 @@ package dev.xortix.suppautils.main.db;
 import dev.xortix.suppautils.main.db.migrations.M20251124_2000_Init;
 import dev.xortix.suppautils.main.db.migrations.M20251124_2102_CreateTableInitials;
 import dev.xortix.suppautils.main.db.migrations.M20251206_0110_AlterTableInitials;
+import dev.xortix.suppautils.main.db.migrations.M20251206_1937_CreateTableHomes;
 import dev.xortix.suppautils.main.log.Logger;
 
 import java.sql.ResultSet;
@@ -14,6 +15,7 @@ public class MigrationProvider {
     private static final Class<? extends MigrationBase>[] MIGRATIONS = new Class[] {
             M20251124_2102_CreateTableInitials.class,
             M20251206_0110_AlterTableInitials.class,
+            M20251206_1937_CreateTableHomes.class,
     };
 
     public static void applyInitialMigration() {

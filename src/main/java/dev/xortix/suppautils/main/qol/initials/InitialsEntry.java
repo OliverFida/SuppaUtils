@@ -23,7 +23,7 @@ public class InitialsEntry {
         this(0, uuid, initials);
     }
 
-    public InitialsEntry(Integer id, UUID uuid, String initials) {
+    private InitialsEntry(Integer id, UUID uuid, String initials) {
         Id = id;
         Uuid = uuid.toString();
         Initials = initials;
