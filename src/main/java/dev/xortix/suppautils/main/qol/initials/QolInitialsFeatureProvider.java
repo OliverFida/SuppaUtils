@@ -123,6 +123,16 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
                     return Command.SINGLE_SUCCESS;
                 })
         ));
+        CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("clear")
+                .requires(source -> source.hasPermissionLevel(2))
+                .executes(ctx -> {
+                    List<InitialsEntry> tempEntries = new ArrayList<>(Initials.values());
+                    tempEntries.forEach(entry -> removeInitials(entry.getUuid()));
+
+                    ctx.getSource().sendFeedback(() -> Text.literal("§aInitials cleared."), false);
+                    return Command.SINGLE_SUCCESS;
+                })
+        ));
     }
 
     @Override
@@ -169,6 +179,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
             int trys = 0;
             while (Main.SERVER == null && trys < 120) {
                 trys++;
+                //noinspection BusyWait
                 Thread.sleep(1000);
             }
             if (trys == 120) throw new Exception("Server took too long to startup");
