@@ -2,12 +2,13 @@ package dev.xortix.suppautils.main.log;
 
 import dev.xortix.suppautils.main.Main;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
-public class Logger {
+public final class Logger {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Main.MOD_ID);
 
-    public static void log(LogCategory category, LogType type, String message) {
+    public static void log(@NotNull LogCategory category, @NotNull LogType type, @NotNull String message) {
         String finalMessage = "";
 
         switch (category) {

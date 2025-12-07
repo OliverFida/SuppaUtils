@@ -1,4 +1,4 @@
-package dev.xortix.suppautils.main.qol.afk;
+package dev.xortix.suppautils.main.features.qol.afk;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -17,6 +17,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,19 +26,19 @@ import java.util.UUID;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class QolAfkFeatureProvider extends FeatureProviderBase {
+public final class QolAfkFeatureProvider extends FeatureProviderBase {
     @Override
-    public String getConfigCategory() {
+    public @NotNull String getConfigCategory() {
         return "qol";
     }
 
     @Override
-    public String getConfigFeature() {
+    public @NotNull String getConfigFeature() {
         return "afk";
     }
 
     @Override
-    public void init() {
+    protected void initImpl() {
         ServerTickEvents.END_WORLD_TICK.register(this::checkAllPlayers);
         ServerMessageEvents.CHAT_MESSAGE.register((message, sender, params) -> updateLastActive(sender.getUuid()));
         ServerPlayerEvents.JOIN.register(player -> resetTracking(player.getUuid()));
@@ -50,6 +51,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
                 if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
 
                 ServerPlayerEntity player = ctx.getSource().getPlayer();
+                assert player != null;
                 setAfk(player);
                 return Command.SINGLE_SUCCESS;
             } catch (Exception ex) {
@@ -68,7 +70,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private IntegerConfigEntry getConfigTimeout() {
+    private @NotNull IntegerConfigEntry getConfigTimeout() {
         return (IntegerConfigEntry) getConfigEntry("timeout");
     }
 
@@ -77,7 +79,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
     private final Map<UUID, Vec3d> LAST_ROTATION = new HashMap<>();
     public final ArrayList<UUID> PLAYERS_AFK = new ArrayList<>();
 
-    public void checkAllPlayers(ServerWorld world) {
+    public void checkAllPlayers(@NotNull ServerWorld world) {
         try {
             if (!getIsEnabled()) return;
 
@@ -97,14 +99,14 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    public void updateLastActive(UUID uuid) {
+    public void updateLastActive(@NotNull UUID uuid) {
         try {
             LAST_ACTIVE.put(uuid, System.currentTimeMillis());
         } catch (Exception ignored) {
         }
     }
 
-    public void resetTracking(UUID uuid) {
+    public void resetTracking(@NotNull UUID uuid) {
         try {
             LAST_ACTIVE.remove(uuid);
             LAST_POSITION.remove(uuid);
@@ -115,21 +117,21 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private void setAfk(ServerPlayerEntity player) {
+    private void setAfk(@NotNull ServerPlayerEntity player) {
         try {
             LAST_ACTIVE.put(player.getUuid(), System.currentTimeMillis() - getConfigTimeout().Value * 1000);
         } catch (Exception ignored) {
         }
     }
 
-    private boolean checkIsAfk(UUID uuid, Vec3d newPosition, Vec3d newRotation) {
+    private @NotNull Boolean checkIsAfk(@NotNull UUID uuid, @NotNull Vec3d newPosition, @NotNull Vec3d newRotation) {
         if (checkHasMoved(uuid, newPosition, newRotation)) updateLastActive(uuid);
 
         long now = System.currentTimeMillis();
         return now - LAST_ACTIVE.get(uuid) >= getConfigTimeout().Value * 1000;
     }
 
-    private boolean checkHasMoved(UUID uuid, Vec3d newPosition, Vec3d newRotation) {
+    private @NotNull Boolean checkHasMoved(@NotNull UUID uuid, @NotNull Vec3d newPosition, @NotNull Vec3d newRotation) {
         if (LAST_POSITION.containsKey(uuid) && LAST_POSITION.get(uuid).equals(newPosition)) {
             // Position same as before
 
@@ -145,7 +147,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         return true;
     }
 
-    private void setAfk(UUID uuid, ServerWorld world, ServerPlayerEntity player) {
+    private void setAfk(@NotNull UUID uuid, @NotNull ServerWorld world, @NotNull ServerPlayerEntity player) {
         if (PLAYERS_AFK.contains(uuid)) return;
 
         PLAYERS_AFK.add(uuid);
@@ -153,7 +155,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         PlayerListManager.updatePlayerListEntryForPlayer(player);
     }
 
-    private void setActive(UUID uuid, ServerWorld world, ServerPlayerEntity player) {
+    private void setActive(@NotNull UUID uuid, @NotNull ServerWorld world, @NotNull ServerPlayerEntity player) {
         if (!PLAYERS_AFK.contains(uuid)) return;
 
         PLAYERS_AFK.remove(uuid);
@@ -161,7 +163,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         PlayerListManager.updatePlayerListEntryForPlayer(player);
     }
 
-    private MutableText getMessage(ServerPlayerEntity player, String messageAfterUsername) {
+    private @NotNull MutableText getMessage(@NotNull ServerPlayerEntity player, @NotNull String messageAfterUsername) {
         MutableText message = Text.empty();
         message.append(Text.literal(player.getName().getString() + " " + messageAfterUsername)).formatted(Formatting.GRAY);
         return message;

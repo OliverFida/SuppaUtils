@@ -1,61 +1,55 @@
-package dev.xortix.suppautils.main.qol.homes;
+package dev.xortix.suppautils.main.features.qol.homes;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import dev.xortix.suppautils.main.Main;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.config.BooleanConfigEntry;
 import dev.xortix.suppautils.main.config.IntegerConfigEntry;
 import dev.xortix.suppautils.main.db.DBProvider;
+import dev.xortix.suppautils.main.helpers.TeleportHelper;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.FullyCustomCommand;
 import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class QolHomesFeatureProvider extends FeatureProviderBase {
+public final class QolHomesFeatureProvider extends FeatureProviderBase {
     @Override
-    public String getConfigCategory() {
+    public @NotNull String getConfigCategory() {
         return "qol";
     }
 
     @Override
-    public String getConfigFeature() {
+    public @NotNull String getConfigFeature() {
         return "homes";
     }
 
     @Override
-    public void init() {
+    protected void initImpl() {
         initHomesFromDb();
 
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "countdown", IntegerArgumentType.integer(0, 30), "seconds"));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "cooldown", IntegerArgumentType.integer(0, 3600), "seconds"));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "maxHomes", IntegerArgumentType.integer(1, 100), "amount"));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "allowNether", BoolArgumentType.bool(), "enabled"));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "allowEnd", BoolArgumentType.bool(), "enabled"));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "interDim", BoolArgumentType.bool(), "enabled"));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "back", BoolArgumentType.bool(), "enabled"));
         CommandsManager.addToRegistrationList(new FullyCustomCommand(
                 literal("homes")
                         .executes(ctx -> {
@@ -64,6 +58,7 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
                                     return Command.SINGLE_SUCCESS;
 
                                 ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                assert player != null;
 
                                 List<HomeEntry> homes = getHomesForPlayer(player);
                                 List<String> homeNames = new ArrayList<>();
@@ -98,34 +93,34 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
                                 .executes(ctx -> handleCommandHome(ctx, false))
                         )
         ));
-        CommandsManager.addToRegistrationList(new FullyCustomCommand(
-                literal("back")
-                        .executes(ctx -> {
-
-                            try {
-                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
-                                    return Command.SINGLE_SUCCESS;
-                                if (!getConfigBack().Value) {
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
-                                    return Command.SINGLE_SUCCESS;
-                                }
-
-                                ServerPlayerEntity player = ctx.getSource().getPlayer();
-                                assert player != null;
-                                Vec3d lastPosition = LAST_POSITION.get(player.getUuid());
-                                if (lastPosition == null) {
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§cKeine letzte Position bekannt."), false);
-                                    return Command.SINGLE_SUCCESS;
-                                }
-
-                                new Thread(() -> teleportPlayer(ctx, player.getEntityWorld().getRegistryKey().getValue().toString(), lastPosition.x, lastPosition.y, lastPosition.z)).start();
-
-                                return Command.SINGLE_SUCCESS;
-                            } catch (Exception ex) {
-                                return handleCommandException(ex);
-                            }
-                        })
-        ));
+//        CommandsManager.addToRegistrationList(new FullyCustomCommand(
+//                literal("back")
+//                        .executes(ctx -> {
+//
+//                            try {
+//                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
+//                                    return Command.SINGLE_SUCCESS;
+//                                if (!getConfigBack().Value) {
+//                                    ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
+//                                    return Command.SINGLE_SUCCESS;
+//                                }
+//
+//                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+//                                assert player != null;
+//                                Vec3d lastPosition = LAST_POSITION.get(player.getUuid());
+//                                if (lastPosition == null) {
+//                                    ctx.getSource().sendFeedback(() -> Text.literal("§cKeine letzte Position bekannt."), false);
+//                                    return Command.SINGLE_SUCCESS;
+//                                }
+//
+//                                new Thread(() -> teleportPlayer(ctx, player.getEntityWorld().getRegistryKey().getValue().toString(), lastPosition.x, lastPosition.y, lastPosition.z)).start();
+//
+//                                return Command.SINGLE_SUCCESS;
+//                            } catch (Exception ex) {
+//                                return handleCommandException(ex);
+//                            }
+//                        })
+//        ));
     }
 
     @Override
@@ -140,41 +135,23 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         super.disable();
 
         Homes.clear();
-        LAST_TELEPORT.clear();
+        TeleportHelper.clearChaches();
     }
 
-    private IntegerConfigEntry getConfigCountdown() {
-        return (IntegerConfigEntry) getConfigEntry("countdown");
-    }
-
-    private IntegerConfigEntry getConfigCooldown() {
-        return (IntegerConfigEntry) getConfigEntry("cooldown");
-    }
-
-    private IntegerConfigEntry getConfigMaxHomes() {
+    private @NotNull IntegerConfigEntry getConfigMaxHomes() {
         return (IntegerConfigEntry) getConfigEntry("maxHomes");
     }
 
-    private BooleanConfigEntry getConfigAllowNether() {
+    private @NotNull BooleanConfigEntry getConfigAllowNether() {
         return (BooleanConfigEntry) getConfigEntry("allowNether");
     }
 
-    private BooleanConfigEntry getConfigAllowEnd() {
+    private @NotNull BooleanConfigEntry getConfigAllowEnd() {
         return (BooleanConfigEntry) getConfigEntry("allowEnd");
-    }
-
-    private BooleanConfigEntry getConfigInterDim() {
-        return (BooleanConfigEntry) getConfigEntry("interDim");
-    }
-
-    private BooleanConfigEntry getConfigBack() {
-        return (BooleanConfigEntry) getConfigEntry("back");
     }
 
     private final String HOMES_TABLE_NAME = "QOL_Homes";
     public Map<String, HomeEntry> Homes = new HashMap<>();
-    public final Map<UUID, Long> LAST_TELEPORT = new HashMap<>();
-    public final Map<UUID, Vec3d> LAST_POSITION = new HashMap<>();
 
     private void initHomesFromDb() {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
@@ -190,7 +167,7 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private int handleCommandSetHome(CommandContext<ServerCommandSource> ctx, boolean useDefaultName) {
+    private int handleCommandSetHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
         try {
             if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
@@ -198,6 +175,7 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
                 return Command.SINGLE_SUCCESS;
 
             ServerPlayerEntity player = ctx.getSource().getPlayer();
+            assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
             String name = tempName;
@@ -229,7 +207,7 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private boolean checkSetHomeAllowedInDim(CommandContext<ServerCommandSource> ctx) {
+    private @NotNull Boolean checkSetHomeAllowedInDim(@NotNull CommandContext<ServerCommandSource> ctx) {
         ServerPlayerEntity player = ctx.getSource().getPlayer();
         assert player != null;
 
@@ -244,12 +222,13 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         return true;
     }
 
-    private int handleCommandDelHome(CommandContext<ServerCommandSource> ctx, boolean useDefaultName) {
+    private @NotNull Integer handleCommandDelHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
         try {
             if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
 
             ServerPlayerEntity player = ctx.getSource().getPlayer();
+            assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
             String name = tempName;
@@ -273,12 +252,13 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private int handleCommandHome(CommandContext<ServerCommandSource> ctx, boolean useDefaultName) {
+    private @NotNull Integer handleCommandHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
         try {
             if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
 
             ServerPlayerEntity player = ctx.getSource().getPlayer();
+            assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
             String name = tempName;
@@ -294,14 +274,14 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
             }
 
             // Teleport
-            new Thread(() -> teleportPlayer(ctx, existingEntry.getDimension(), existingEntry.X, existingEntry.Y, existingEntry.Z)).start();
+            new Thread(() -> TeleportHelper.teleportPlayer(ctx, existingEntry.getDimension(), existingEntry.X, existingEntry.Y, existingEntry.Z)).start();
             return Command.SINGLE_SUCCESS;
         } catch (Exception ex) {
             return handleCommandException(ex);
         }
     }
 
-    private List<HomeEntry> getHomesForPlayer(ServerPlayerEntity player) {
+    private @NotNull List<HomeEntry> getHomesForPlayer(@NotNull ServerPlayerEntity player) {
         List<HomeEntry> foundHomes = new ArrayList<>();
 
         Homes.forEach((id, entry) -> {
@@ -311,58 +291,7 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         return foundHomes;
     }
 
-    private void teleportPlayer(CommandContext<ServerCommandSource> ctx, String dimension, double x, double y, double z) {
-        try {
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            assert player != null;
-            int countdownSeconds = getConfigCountdown().Value;
-            // OFDO: Safety checks: WillSuffocate, BlockUnderneath
-
-            // Check cooldown
-            long lastTeleport = LAST_TELEPORT.getOrDefault(player.getUuid(), 0L);
-            if (System.currentTimeMillis() - lastTeleport < getConfigCooldown().Value * 1000) {
-                ctx.getSource().sendFeedback(() -> Text.literal("§cDu hast dich erst vor kurzem teleportiert."), false);
-                return;
-            }
-
-            // Check interDim
-            if (!player.getEntityWorld().getRegistryKey().getValue().toString().equals(dimension) && !getConfigInterDim().Value) {
-                ctx.getSource().sendFeedback(() -> Text.literal("§cDu darfst dich nicht zwischen Dimensionen teleportieren!"), false);
-                return;
-            }
-
-            Vec3d positionBefore = player.getEntityPos();
-            ctx.getSource().sendFeedback(() -> Text.literal("§6Teleportationsvorgang startet... Nicht bewegen!"), false);
-            for (int s = 0; s < countdownSeconds; s++) {
-                int restSeconds = countdownSeconds - s;
-                ctx.getSource().sendFeedback(() -> Text.literal("§6" + restSeconds + "..."), false);
-                Thread.sleep(1000);
-
-                Vec3d positionAfter = player.getEntityPos();
-                if (!positionBefore.equals(positionAfter)) {
-                    ctx.getSource().sendFeedback(() -> Text.literal("§cAbbruch... Du hast dich bewegt."), false);
-                    return;
-                }
-            }
-
-            ServerWorld world = Main.SERVER.getWorld(RegistryKey.of(RegistryKeys.WORLD, Identifier.of(dimension)));
-            assert world != null;
-
-            Set<PositionFlag> flags = new HashSet<>();
-            ctx.getSource().sendFeedback(() -> Text.literal("§6Teleportiere..."), false);
-            boolean success = player.teleport(world, x, y, z, flags, player.getYaw(), player.getPitch(), false);
-            if (!success) {
-                ctx.getSource().sendFeedback(() -> Text.literal("§cTeleportieren fehlgeschlagen."), false);
-            } else {
-                LAST_TELEPORT.put(player.getUuid(), System.currentTimeMillis());
-                LAST_POSITION.put(player.getUuid(), positionBefore);
-            }
-        } catch (Exception ex) {
-            Logger.log(Logger.LogCategory.HOMES, Logger.LogType.ERROR, ex.getMessage());
-        }
-    }
-
-    private void createHome(ServerPlayerEntity player, String name) {
+    private void createHome(@NotNull ServerPlayerEntity player, @NotNull String name) {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
             HomeEntry entry = new HomeEntry(player.getUuidAsString(), name, player.getEntityWorld().getRegistryKey().getValue().toString(), player.getX(), player.getY(), player.getZ());
             ResultSet rs = insertEntry(st, entry);
@@ -373,7 +302,7 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private void updateHome(ServerPlayerEntity player, HomeEntry entry) {
+    private void updateHome(@NotNull ServerPlayerEntity player, @NotNull HomeEntry entry) {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
             entry.X = player.getX();
             entry.Y = player.getY();
@@ -386,7 +315,7 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private void removeHome(HomeEntry entry) {
+    private void removeHome(@NotNull HomeEntry entry) {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
             deleteEntry(st, entry);
             Homes.remove(entry.Id());
@@ -395,25 +324,25 @@ public class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private ResultSet getEntries(Statement st) throws SQLException {
+    private @NotNull ResultSet getEntries(@NotNull Statement st) throws SQLException {
         return st.executeQuery("SELECT * FROM '" + HOMES_TABLE_NAME + "';");
     }
 
-    private ResultSet getEntry(Statement st, HomeEntry entry) throws SQLException {
+    private @NotNull ResultSet getEntry(@NotNull Statement st, @NotNull HomeEntry entry) throws SQLException {
         return st.executeQuery("SELECT * FROM '" + HOMES_TABLE_NAME + "' WHERE Id='" + entry.Id() + "';");
     }
 
-    private ResultSet updateEntry(Statement st, HomeEntry entry) throws SQLException {
+    private @NotNull ResultSet updateEntry(@NotNull Statement st, @NotNull HomeEntry entry) throws SQLException {
         st.execute("UPDATE '" + HOMES_TABLE_NAME + "' SET Dimension='" + entry.getDimension() + "',X=" + entry.X + ",Y=" + entry.Y + ",Z=" + entry.Z + " WHERE Id='" + entry.Id() + "';");
         return getEntry(st, entry);
     }
 
-    private ResultSet insertEntry(Statement st, HomeEntry entry) throws SQLException {
+    private @NotNull ResultSet insertEntry(@NotNull Statement st, @NotNull HomeEntry entry) throws SQLException {
         st.execute("INSERT INTO '" + HOMES_TABLE_NAME + "' (Id,Owner,Name,Dimension,X,Y,Z) VALUES ('" + entry.Id() + "','" + entry.Owner + "','" + entry.Name + "','" + entry.getDimension() + "'," + entry.X + "," + entry.Y + "," + entry.Z + ");");
         return getEntry(st, entry);
     }
 
-    private void deleteEntry(Statement st, HomeEntry entry) throws SQLException {
+    private void deleteEntry(@NotNull Statement st, @NotNull HomeEntry entry) throws SQLException {
         st.execute("DELETE FROM '" + HOMES_TABLE_NAME + "' WHERE Id='" + entry.Id() + "';");
     }
 }

@@ -16,22 +16,25 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class SuppaCommand extends CommandBase {
+public final class SuppaCommand extends CommandBase {
     private final TYPE _type;
     private final String _key;
     private final ArgumentType<?> _argumentType;
     private final String _valueDescription;
     private final FeatureProviderBase _featureProvider;
 
-    public SuppaCommand(TYPE type, FeatureProviderBase featureProvider) {
+    /// For feature specific ENABLE & DISABLE commands
+    public SuppaCommand(@NotNull TYPE type, @NotNull FeatureProviderBase featureProvider) {
         this(type, featureProvider, "", null, "");
     }
 
-    public SuppaCommand(TYPE type, FeatureProviderBase featureProvider, String key, ArgumentType<?> argumentType, String valueDescription) {
+    /// For feature specific CONFIG commands
+    public SuppaCommand(@NotNull TYPE type, FeatureProviderBase featureProvider, @NotNull String key, ArgumentType<?> argumentType, @NotNull String valueDescription) {
         _type = type;
         _featureProvider = featureProvider;
         if (type == TYPE.CONFIG && (key.isBlank() || argumentType == null || valueDescription.isBlank()))
@@ -41,8 +44,13 @@ public class SuppaCommand extends CommandBase {
         _valueDescription = valueDescription;
     }
 
+    /// For global CONFIG commands
+    public SuppaCommand(@NotNull TYPE type, @NotNull String key, ArgumentType<?> argumentType, @NotNull String valueDescription) {
+        this(type, null, key, argumentType, valueDescription);
+    }
+
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
+    public void register(@NotNull CommandDispatcher<ServerCommandSource> dispatcher, @NotNull CommandRegistryAccess registryAccess, CommandManager.@NotNull RegistrationEnvironment registrationEnvironment) {
         LiteralArgumentBuilder<ServerCommandSource> builder = switch (_type) {
             case ENABLE -> getBuilder(this::executeEnableFeature);
             case DISABLE -> getBuilder(this::executeDisableFeature);
@@ -55,17 +63,22 @@ public class SuppaCommand extends CommandBase {
         dispatcher.register(builder);
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> getBuilder(Command<ServerCommandSource> executes) {
+    private @NotNull LiteralArgumentBuilder<ServerCommandSource> getBuilder(@NotNull Command<ServerCommandSource> executes) {
         return getBuilder(executes, null);
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> getBuilder(Command<ServerCommandSource> executes, LiteralArgumentBuilder<ServerCommandSource> innerBuilder) {
+    private @NotNull LiteralArgumentBuilder<ServerCommandSource> getBuilder(@NotNull Command<ServerCommandSource> executes, LiteralArgumentBuilder<ServerCommandSource> innerBuilder) {
         // Feature
         LiteralArgumentBuilder<ServerCommandSource> featureBuilder;
         if (innerBuilder == null) {
+            // ENABLE / DISABLE
             featureBuilder = literal(_featureProvider.getConfigFeature()).requires(source -> source.hasPermissionLevel(2)).executes(executes);
-        } else {
+        } else if (_featureProvider != null) {
+            // Feature specific CONFIG
             featureBuilder = literal(_featureProvider.getConfigFeature()).then(innerBuilder);
+        } else {
+            // Global CONFIG
+            featureBuilder = null;
         }
 
         // Type
@@ -75,15 +88,28 @@ public class SuppaCommand extends CommandBase {
             case DISABLE -> "disable";
             case CONFIG -> "config";
         };
-        typeBuilder = literal(typeString).then(featureBuilder);
+        if (featureBuilder != null) {
+            // Feature specific
+            typeBuilder = literal(typeString).then(featureBuilder);
+        } else {
+            // Global
+            typeBuilder = literal(typeString).then(innerBuilder);
+        }
 
         // Category
-        LiteralArgumentBuilder<ServerCommandSource> categoryBuilder = literal(_featureProvider.getConfigCategory()).then(typeBuilder);
+        LiteralArgumentBuilder<ServerCommandSource> categoryBuilder;
+        if (featureBuilder != null) {
+            // Feature specific
+            categoryBuilder = literal(_featureProvider.getConfigCategory()).then(typeBuilder);
+        } else {
+            // Global
+            categoryBuilder = literal("global").then(typeBuilder);
+        }
 
         return literal("suppa").then(categoryBuilder);
     }
 
-    private LiteralArgumentBuilder<ServerCommandSource> getConfigBuilder() {
+    private @NotNull LiteralArgumentBuilder<ServerCommandSource> getConfigBuilder() {
         // Value
         RequiredArgumentBuilder<ServerCommandSource, ?> valueBuilder = argument(_valueDescription, _argumentType).requires(source -> source.hasPermissionLevel(2)).executes(this::executeConfigFeature);
 
@@ -91,7 +117,7 @@ public class SuppaCommand extends CommandBase {
         return literal(_key).then(valueBuilder);
     }
 
-    private int executeEnableFeature(CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
+    private @NotNull Integer executeEnableFeature(@NotNull CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
         if (_featureProvider.getIsEnabled()) {
             serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§cFeature already enabled."), false);
             return 0;
@@ -103,7 +129,7 @@ public class SuppaCommand extends CommandBase {
         return Command.SINGLE_SUCCESS;
     }
 
-    private int executeDisableFeature(CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
+    private @NotNull Integer executeDisableFeature(@NotNull CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
         if (!_featureProvider.getIsEnabled()) {
             serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§cFeature already disabled."), false);
             return 0;
@@ -115,34 +141,42 @@ public class SuppaCommand extends CommandBase {
         return Command.SINGLE_SUCCESS;
     }
 
-    private int executeConfigFeature(CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
-        ConfigEntry<?> configEntry = _featureProvider.getConfigEntry(_key);
+    private @NotNull Integer executeConfigFeature(@NotNull CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
+        ConfigEntryBase<?> configEntry;
+        if (_featureProvider != null) {
+            // Feature specific
+            configEntry = _featureProvider.getConfigEntry(_key);
+        } else {
+            configEntry = ConfigProvider.getGlobalConfigEntry(_key);
+        }
 
         // Integer
-        if (configEntry instanceof IntegerConfigEntry caseEntry) {
-            caseEntry.Value = IntegerArgumentType.getInteger(serverCommandSourceCommandContext, _valueDescription);
-            ConfigProvider.storeEntry(caseEntry);
-            serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aValue has been set."), false);
-            return Command.SINGLE_SUCCESS;
-        }
+        switch (configEntry) {
+            case IntegerConfigEntry caseEntry -> {
+                caseEntry.Value = IntegerArgumentType.getInteger(serverCommandSourceCommandContext, _valueDescription);
+                ConfigProvider.updateEntry(caseEntry);
+                serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aValue has been set."), false);
+                return Command.SINGLE_SUCCESS;
+            }
 
-        // Double
-        if (configEntry instanceof DoubleConfigEntry caseEntry) {
-            caseEntry.Value = DoubleArgumentType.getDouble(serverCommandSourceCommandContext, _valueDescription);
-            ConfigProvider.storeEntry(caseEntry);
-            serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aValue has been set."), false);
-            return Command.SINGLE_SUCCESS;
-        }
+            // Double
+            case DoubleConfigEntry caseEntry -> {
+                caseEntry.Value = DoubleArgumentType.getDouble(serverCommandSourceCommandContext, _valueDescription);
+                ConfigProvider.updateEntry(caseEntry);
+                serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aValue has been set."), false);
+                return Command.SINGLE_SUCCESS;
+            }
 
-        // Boolean
-        if (configEntry instanceof BooleanConfigEntry caseEntry) {
-            caseEntry.Value = BoolArgumentType.getBool(serverCommandSourceCommandContext, _valueDescription);
-            ConfigProvider.storeEntry(caseEntry);
-            serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aValue has been set."), false);
-            return Command.SINGLE_SUCCESS;
-        }
+            // Boolean
+            case BooleanConfigEntry caseEntry -> {
+                caseEntry.Value = BoolArgumentType.getBool(serverCommandSourceCommandContext, _valueDescription);
+                ConfigProvider.updateEntry(caseEntry);
+                serverCommandSourceCommandContext.getSource().sendFeedback(() -> Text.literal("§aValue has been set."), false);
+                return Command.SINGLE_SUCCESS;
+            }
 
-        throw new NotImplementedException();
+            default -> throw new NotImplementedException();
+        }
     }
 
     public enum TYPE {

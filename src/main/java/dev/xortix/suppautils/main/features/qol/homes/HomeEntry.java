@@ -1,25 +1,26 @@
-package dev.xortix.suppautils.main.qol.homes;
+package dev.xortix.suppautils.main.features.qol.homes;
 
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class HomeEntry {
-    public String Id() {
+public final class HomeEntry {
+    public @NotNull String Id() {
         return Owner.toLowerCase() + ";" + Name.toLowerCase();
     }
     public final String Owner;
     public final String Name;
     private Identifier _dimension;
-    public String getDimension() {
+    public @NotNull String getDimension() {
         return _dimension.toString();
     }
     public Double X;
     public Double Y;
     public Double Z;
 
-    public HomeEntry(ResultSet rs) throws SQLException {
+    public HomeEntry(@NotNull ResultSet rs) throws SQLException {
         Owner = rs.getString("Owner");
         Name = rs.getString("Name");
         stringToDimension(rs.getString("Dimension"));
@@ -28,7 +29,7 @@ public class HomeEntry {
         Z = rs.getDouble("Z");
     }
 
-    public HomeEntry(String owner, String name, String dimension, Double x, Double y, Double z) {
+    public HomeEntry(@NotNull String owner, @NotNull String name, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z) {
         Owner = owner;
         Name = name;
         stringToDimension(dimension);
@@ -37,7 +38,7 @@ public class HomeEntry {
         Z = z;
     }
 
-    protected void stringToDimension(String stringValue) {
+    private void stringToDimension(@NotNull String stringValue) {
         String input = stringValue.trim().toLowerCase();
 
         _dimension = Identifier.tryParse(input);

@@ -1,9 +1,9 @@
 package dev.xortix.suppautils.main.shared;
 
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
-import dev.xortix.suppautils.main.qol.afk.QolAfkFeatureProvider;
-import dev.xortix.suppautils.main.qol.homes.QolHomesFeatureProvider;
-import dev.xortix.suppautils.main.qol.initials.QolInitialsFeatureProvider;
+import dev.xortix.suppautils.main.features.qol.afk.QolAfkFeatureProvider;
+import dev.xortix.suppautils.main.features.qol.homes.QolHomesFeatureProvider;
+import dev.xortix.suppautils.main.features.qol.initials.QolInitialsFeatureProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,5 +33,7 @@ public class FeaturesManager {
         QOL_INITIALS,
         QOL_AFK,
         QOL_HOMES,
+        QOL_SPAWN,
+        QOL_BACK,
     }
 }

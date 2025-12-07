@@ -2,6 +2,7 @@ package dev.xortix.suppautils.main;
 
 import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.db.DBProvider;
+import dev.xortix.suppautils.main.helpers.TeleportHelper;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.FeaturesManager;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
@@ -25,6 +26,9 @@ public class Main implements ModInitializer {
         // SERVER
         ServerLifecycleEvents.SERVER_STARTED.register(server -> SERVER = server);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> SERVER = null);
+
+        // Helpers
+        TeleportHelper.init();
 
         // Features
         FeaturesManager.init();

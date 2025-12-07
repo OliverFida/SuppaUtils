@@ -5,14 +5,15 @@ import dev.xortix.suppautils.main.db.migrations.M20251124_2102_CreateTableInitia
 import dev.xortix.suppautils.main.db.migrations.M20251206_0110_AlterTableInitials;
 import dev.xortix.suppautils.main.db.migrations.M20251206_1937_CreateTableHomes;
 import dev.xortix.suppautils.main.log.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class MigrationProvider {
-    private static final Class<? extends MigrationBase> INITIAL_MIGRATION = M20251124_2000_Init.class;
-    private static final Class<? extends MigrationBase>[] MIGRATIONS = new Class[] {
+public final class MigrationProvider {
+    private static final @NotNull Class<? extends MigrationBase> INITIAL_MIGRATION = M20251124_2000_Init.class;
+    private static final @NotNull Class<? extends MigrationBase>[] MIGRATIONS = new Class[] {
             M20251124_2102_CreateTableInitials.class,
             M20251206_0110_AlterTableInitials.class,
             M20251206_1937_CreateTableHomes.class,
@@ -54,13 +55,13 @@ public class MigrationProvider {
         }
     }
 
-    private static void addMigrationToHistory(Statement st, Class<? extends MigrationBase> migration) throws SQLException {
+    private static void addMigrationToHistory(@NotNull Statement st, @NotNull Class<? extends MigrationBase> migration) throws SQLException {
         String migrationName = migration.getSimpleName();
 
         st.execute("INSERT INTO \"_Migrations\" (Id) VALUES ('" + migrationName + "');");
     }
 
-    private static boolean getMigrationInHistory(Statement st, Class<? extends MigrationBase> migration) throws SQLException {
+    private static boolean getMigrationInHistory(@NotNull Statement st, @NotNull Class<? extends MigrationBase> migration) throws SQLException {
         String migrationName = migration.getSimpleName();
 
         ResultSet result = st.executeQuery("SELECT Id, AppliedAt FROM \"_Migrations\" WHERE Id = \"" + migrationName + "\";");

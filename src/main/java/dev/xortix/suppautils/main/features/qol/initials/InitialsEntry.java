@@ -1,29 +1,31 @@
-package dev.xortix.suppautils.main.qol.initials;
+package dev.xortix.suppautils.main.features.qol.initials;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class InitialsEntry {
+public final class InitialsEntry {
     public final Integer Id;
     public final String Uuid;
     public String Initials;
 
-    public UUID getUuid() {
+    public @NotNull UUID getUuid() {
         return UUID.fromString(Uuid);
     }
 
-    public InitialsEntry(ResultSet rs) throws SQLException {
+    public InitialsEntry(@NotNull ResultSet rs) throws SQLException {
         Id = rs.getInt("Id");
         Uuid = rs.getString("Uuid");
         Initials = rs.getString("Initials");
     }
 
-    public InitialsEntry(UUID uuid, String initials) {
+    public InitialsEntry(@NotNull UUID uuid, @NotNull String initials) {
         this(0, uuid, initials);
     }
 
-    private InitialsEntry(Integer id, UUID uuid, String initials) {
+    private InitialsEntry(@NotNull Integer id, @NotNull UUID uuid, @NotNull String initials) {
         Id = id;
         Uuid = uuid.toString();
         Initials = initials;

@@ -1,4 +1,4 @@
-package dev.xortix.suppautils.main.qol.initials;
+package dev.xortix.suppautils.main.features.qol.initials;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -17,6 +17,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -35,19 +36,19 @@ import java.util.stream.Collectors;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class QolInitialsFeatureProvider extends FeatureProviderBase {
+public final class QolInitialsFeatureProvider extends FeatureProviderBase {
     @Override
-    public String getConfigCategory() {
+    public @NotNull String getConfigCategory() {
         return "qol";
     }
 
     @Override
-    public String getConfigFeature() {
+    public @NotNull String getConfigFeature() {
         return "initials";
     }
 
     @Override
-    public void init() {
+    protected void initImpl() {
         initFromDb();
         new Thread(this::importFromFile).start();
 
@@ -64,7 +65,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
                                         if (players.isEmpty()) return Command.SINGLE_SUCCESS;
 
                                         for (PlayerConfigEntry player : players) {
-                                            InitialsEntry currentInitials = Initials.get(player.id());
+                                            InitialsEntry currentInitials = _initials.get(player.id());
                                             String newInitials = StringArgumentType.getString(ctx, "newInitials");
                                             updateInitials(player.id(), currentInitials, newInitials);
 
@@ -93,7 +94,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
                                 if (players.isEmpty()) return Command.SINGLE_SUCCESS;
 
                                 for (PlayerConfigEntry player : players) {
-                                    InitialsEntry currentInitials = Initials.get(player.id());
+                                    InitialsEntry currentInitials = _initials.get(player.id());
                                     if (currentInitials == null) {
                                         ctx.getSource().sendFeedback(() -> Text.literal("§cNo initials to delete for player \"" + player.name() + "\"."), false);
                                         return Command.SINGLE_SUCCESS;
@@ -139,7 +140,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(ctx -> {
                     try {
-                        List<InitialsEntry> tempEntries = new ArrayList<>(Initials.values());
+                        List<InitialsEntry> tempEntries = new ArrayList<>(_initials.values());
                         tempEntries.forEach(entry -> removeInitials(entry.getUuid()));
 
                         ctx.getSource().sendFeedback(() -> Text.literal("§aInitials cleared."), false);
@@ -163,28 +164,32 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
     public void disable() {
         super.disable();
 
-        Initials.clear();
+        _initials.clear();
         PlayerListManager.updatePlayerList();
     }
 
     private final String INITIALS_TABLE_NAME = "QOL_Initials";
-    public Map<UUID, InitialsEntry> Initials = new HashMap<>();
+    private final Map<UUID, InitialsEntry> _initials = new HashMap<>();
+    public Map<UUID, InitialsEntry> getInitials() {
+        if (getIsEnabled()) return _initials;
+        return new HashMap<>();
+    }
 
     private void initFromDb() {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
-            Initials.clear();
+            _initials.clear();
 
             ResultSet rs = getEntries(st);
             while (rs.next()) {
                 InitialsEntry entry = new InitialsEntry(rs);
-                Initials.put(entry.getUuid(), entry);
+                _initials.put(entry.getUuid(), entry);
             }
         } catch (Exception ex) {
             Logger.log(Logger.LogCategory.INITIALS, Logger.LogType.ERROR, ex.getMessage());
         }
     }
 
-    private int importFromFile() {
+    private @NotNull Integer importFromFile() {
         Path filePath = FabricLoader.getInstance().getConfigDir().resolve("suppautils-initials.csv");
         Path filePathAfter = FabricLoader.getInstance().getConfigDir().resolve("suppautils-initials_done.csv");
         if (!Files.exists(filePath)) return 404;
@@ -206,7 +211,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
 
                     UUID uuid = getPlayerUuidFromApi(parts[0]);
 
-                    InitialsEntry currentInitials = Initials.get(uuid);
+                    InitialsEntry currentInitials = _initials.get(uuid);
                     updateInitials(uuid, currentInitials, parts[1]);
                 } catch (Exception ex) {
                     Logger.log(Logger.LogCategory.INITIALS, Logger.LogType.ERROR, ex.getMessage());
@@ -224,7 +229,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
         return 200;
     }
 
-    private UUID getPlayerUuidFromApi(String username) throws Exception {
+    private @NotNull UUID getPlayerUuidFromApi(@NotNull String username) throws Exception {
         try {
             URI apiUri = URI.create("https://api.mojang.com/users/profiles/minecraft/" + username);
             URL apiUrl = apiUri.toURL();
@@ -251,7 +256,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private void updateInitials(UUID uuid, InitialsEntry currentInitials, String newInitials) {
+    private void updateInitials(@NotNull UUID uuid, InitialsEntry currentInitials, @NotNull String newInitials) {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
             // Local Entry
             InitialsEntry localEntry = currentInitials;
@@ -269,7 +274,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
             }
             InitialsEntry dbEntry = new InitialsEntry(rs);
 
-            Initials.put(dbEntry.getUuid(), dbEntry);
+            _initials.put(dbEntry.getUuid(), dbEntry);
 
             PlayerListManager.updatePlayerList();
         } catch (Exception ex) {
@@ -277,13 +282,13 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private void removeInitials(UUID uuid) {
+    private void removeInitials(@NotNull UUID uuid) {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
-            InitialsEntry localEntry = Initials.get(uuid);
+            InitialsEntry localEntry = _initials.get(uuid);
             if (localEntry == null) return;
 
             deleteEntry(st, localEntry);
-            Initials.remove(localEntry.getUuid());
+            _initials.remove(localEntry.getUuid());
 
             PlayerListManager.updatePlayerList();
         } catch (Exception ex) {
@@ -291,25 +296,25 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private ResultSet getEntries(Statement st) throws SQLException {
+    private @NotNull ResultSet getEntries(@NotNull Statement st) throws SQLException {
         return st.executeQuery("SELECT * FROM \"" + INITIALS_TABLE_NAME + "\";");
     }
 
-    private ResultSet getEntryByUuid(Statement st, InitialsEntry entry) throws SQLException {
+    private @NotNull ResultSet getEntryByUuid(@NotNull Statement st, @NotNull InitialsEntry entry) throws SQLException {
         return st.executeQuery("SELECT * FROM \"" + INITIALS_TABLE_NAME + "\" WHERE Uuid = \"" + entry.Uuid + "\";");
     }
 
-    private ResultSet insertEntry(Statement st, InitialsEntry entry) throws SQLException {
+    private @NotNull ResultSet insertEntry(@NotNull Statement st, @NotNull InitialsEntry entry) throws SQLException {
         st.execute("INSERT INTO \"" + INITIALS_TABLE_NAME + "\" (Uuid, Initials) VALUES (\"" + entry.Uuid + "\", \"" + entry.Initials + "\");");
         return getEntryByUuid(st, entry);
     }
 
-    private ResultSet updateEntry(Statement st, Integer id, InitialsEntry entry) throws SQLException {
+    private @NotNull ResultSet updateEntry(@NotNull Statement st, @NotNull Integer id, @NotNull InitialsEntry entry) throws SQLException {
         st.execute("UPDATE \"" + INITIALS_TABLE_NAME + "\" SET Initials=\"" + entry.Initials + "\" WHERE Id=\"" + id + "\";");
         return getEntryByUuid(st, entry);
     }
 
-    private void deleteEntry(Statement st, InitialsEntry entry) throws SQLException {
+    private void deleteEntry(@NotNull Statement st, @NotNull InitialsEntry entry) throws SQLException {
         st.execute("DELETE FROM\"" + INITIALS_TABLE_NAME + "\" WHERE Id=" + entry.Id + ";");
     }
 }
