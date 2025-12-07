@@ -68,6 +68,14 @@ public class ConfigProvider {
         CONFIG_ENTRIES.put(entry.Id(), entry);
         entry = new IntegerConfigEntry(feature, "maxHomes", 3);
         CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new BooleanConfigEntry(feature, "allowNether", false);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new BooleanConfigEntry(feature, "allowEnd", false);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new BooleanConfigEntry(feature, "interDim", false);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
+        entry = new BooleanConfigEntry(feature, "back", false);
+        CONFIG_ENTRIES.put(entry.Id(), entry);
     }
 
     private static void checkAgainstDB(Statement st, ConfigEntry<?> entry) throws SQLException {

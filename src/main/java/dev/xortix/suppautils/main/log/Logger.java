@@ -22,6 +22,9 @@ public class Logger {
             case AFK:
                 finalMessage += "[AFK] ";
                 break;
+            case HOMES:
+                finalMessage += "[Homes] ";
+                break;
             default:
                 throw new NotImplementedException("LogCategory '" + category.name() + "' not implemented.");
         }
@@ -65,6 +68,7 @@ public class Logger {
         DATABASE,
 
         INITIALS,
-        AFK
+        AFK,
+        HOMES,
     }
 }

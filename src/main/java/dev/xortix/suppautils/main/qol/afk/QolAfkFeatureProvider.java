@@ -44,7 +44,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
         ServerPlayerEvents.LEAVE.register(player -> resetTracking(player.getUuid()));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "timeout", IntegerArgumentType.integer(10, 3600), "timeout"));
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "timeout", IntegerArgumentType.integer(10, 3600), "seconds"));
         CommandsManager.addToRegistrationList(new FullyCustomCommand(literal("afk").executes(ctx -> {
             try {
                 if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;

@@ -10,11 +10,14 @@ public class M20251206_1937_CreateTableHomes extends MigrationBase {
     public void apply(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE QOL_Homes (
-                Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                Id TEXT NOT NULL,
                 Owner TEXT NOT NULL,
+                Name TEXT NOT NULL,
+                Dimension TEXT NOT NULL,
                 X NUMERIC NOT NULL,
                 Y NUMERIC NOT NULL,
-                Z NUMERIC NOT NULL
+                Z NUMERIC NOT NULL,
+                CONSTRAINT QOL_Homes_PK PRIMARY KEY (Id)
             );
         """);
     }
