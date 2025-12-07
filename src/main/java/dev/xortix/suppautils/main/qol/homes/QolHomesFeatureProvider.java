@@ -6,7 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import dev.xortix.suppautils.main.Main;
-import dev.xortix.suppautils.main.base.FeatureWithSubFeaturesProviderBase;
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.config.BooleanConfigEntry;
 import dev.xortix.suppautils.main.config.IntegerConfigEntry;
 import dev.xortix.suppautils.main.db.DBProvider;
@@ -32,7 +32,7 @@ import java.util.*;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase {
+public class QolHomesFeatureProvider extends FeatureProviderBase {
     @Override
     public String getConfigCategory() {
         return "qol";
@@ -47,10 +47,8 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
     public void init() {
         initHomesFromDb();
 
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this, "homes"));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this, "homes"));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this, "spawn"));
-        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this, "spawn"));
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.ENABLE, this));
+        CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.DISABLE, this));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "countdown", IntegerArgumentType.integer(0, 30), "seconds"));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "cooldown", IntegerArgumentType.integer(0, 3600), "seconds"));
         CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, this, "maxHomes", IntegerArgumentType.integer(1, 100), "amount"));
@@ -62,7 +60,7 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
                 literal("homes")
                         .executes(ctx -> {
                             try {
-                                if (checkFeatureEnabledForCommand(ctx, "homes") == Command.SINGLE_SUCCESS)
+                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                                     return Command.SINGLE_SUCCESS;
 
                                 ServerPlayerEntity player = ctx.getSource().getPlayer();
@@ -105,7 +103,7 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
                         .executes(ctx -> {
 
                             try {
-                                if (checkFeatureEnabledForCommand(ctx, "homes") == Command.SINGLE_SUCCESS)
+                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                                     return Command.SINGLE_SUCCESS;
                                 if (!getConfigBack().Value) {
                                     ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
@@ -131,22 +129,18 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
     }
 
     @Override
-    public void enable(String subFeature) {
-        super.enable(subFeature);
+    public void enable() {
+        super.enable();
 
-        if (subFeature.equals("homes")) {
-            initHomesFromDb();
-        }
+        initHomesFromDb();
     }
 
     @Override
-    public void disable(String subFeature) {
-        super.disable(subFeature);
+    public void disable() {
+        super.disable();
 
-        if (subFeature.equals("homes")) {
-            Homes.clear();
-            LAST_TELEPORT.clear();
-        }
+        Homes.clear();
+        LAST_TELEPORT.clear();
     }
 
     private IntegerConfigEntry getConfigCountdown() {
@@ -178,8 +172,6 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
     }
 
     private final String HOMES_TABLE_NAME = "QOL_Homes";
-    private final String NETHER_DIM_NAME = "minecraft:the_nether";
-    private final String END_DIM_NAME = "minecraft:the_end";
     public Map<String, HomeEntry> Homes = new HashMap<>();
     public final Map<UUID, Long> LAST_TELEPORT = new HashMap<>();
     public final Map<UUID, Vec3d> LAST_POSITION = new HashMap<>();
@@ -200,7 +192,7 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
 
     private int handleCommandSetHome(CommandContext<ServerCommandSource> ctx, boolean useDefaultName) {
         try {
-            if (checkFeatureEnabledForCommand(ctx, "homes") == Command.SINGLE_SUCCESS)
+            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
             if (!checkSetHomeAllowedInDim(ctx))
                 return Command.SINGLE_SUCCESS;
@@ -243,8 +235,8 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
 
         String dimension = player.getEntityWorld().getRegistryKey().getValue().toString();
 
-        if ((dimension.equals(NETHER_DIM_NAME) && !getConfigAllowNether().Value)
-                || (dimension.equals(END_DIM_NAME) && !getConfigAllowEnd().Value)) {
+        if ((dimension.equals("minecraft:the_nether") && !getConfigAllowNether().Value)
+                || (dimension.equals("minecraft:the_end") && !getConfigAllowEnd().Value)) {
             ctx.getSource().sendFeedback(() -> Text.literal("§cDu darfst in dieser Dimension keine Homes erstellen."), false);
             return false;
         }
@@ -254,7 +246,7 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
 
     private int handleCommandDelHome(CommandContext<ServerCommandSource> ctx, boolean useDefaultName) {
         try {
-            if (checkFeatureEnabledForCommand(ctx, "homes") == Command.SINGLE_SUCCESS)
+            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
 
             ServerPlayerEntity player = ctx.getSource().getPlayer();
@@ -283,7 +275,7 @@ public class QolHomesFeatureProvider extends FeatureWithSubFeaturesProviderBase 
 
     private int handleCommandHome(CommandContext<ServerCommandSource> ctx, boolean useDefaultName) {
         try {
-            if (checkFeatureEnabledForCommand(ctx, "homes") == Command.SINGLE_SUCCESS)
+            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
 
             ServerPlayerEntity player = ctx.getSource().getPlayer();

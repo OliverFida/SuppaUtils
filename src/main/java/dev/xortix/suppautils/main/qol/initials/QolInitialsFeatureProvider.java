@@ -152,7 +152,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
     }
 
     @Override
-    public void enable() throws Exception {
+    public void enable() {
         super.enable();
 
         initFromDb();
@@ -160,7 +160,7 @@ public class QolInitialsFeatureProvider extends FeatureProviderBase {
     }
 
     @Override
-    public void disable() throws Exception {
+    public void disable() {
         super.disable();
 
         Initials.clear();

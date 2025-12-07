@@ -58,9 +58,7 @@ public class ConfigProvider {
 
         // QOL Homes
         feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_HOMES);
-        entry = new BooleanConfigEntry(feature, "enabled_homes", false);
-        CONFIG_ENTRIES.put(entry.Id(), entry);
-        entry = new BooleanConfigEntry(feature, "enabled_spawn", false);
+        entry = new BooleanConfigEntry(feature, "enabled", false);
         CONFIG_ENTRIES.put(entry.Id(), entry);
         entry = new IntegerConfigEntry(feature, "countdown", 5);
         CONFIG_ENTRIES.put(entry.Id(), entry);
@@ -92,13 +90,13 @@ public class ConfigProvider {
         return st.executeQuery("SELECT * FROM \"Config\" WHERE Id = \"" + entry.Id() + "\";");
     }
 
-    private static ResultSet insertValue(Statement st, ConfigEntry<?> entry) throws SQLException {
+    private static void insertValue(Statement st, ConfigEntry<?> entry) throws SQLException {
         st.execute("INSERT INTO Config (Id, Category, Feature, \"Key\", Value) VALUES (\"" + entry.Id() + "\", \"" + entry.Category() + "\", \"" + entry.Feature() + "\", \"" + entry.Key + "\", \"" + entry.valueToString() + "\");");
-        return getValue(st, entry);
+        getValue(st, entry);
     }
 
-    private static ResultSet updateValue(Statement st, ConfigEntry<?> entry) throws SQLException {
+    private static void updateValue(Statement st, ConfigEntry<?> entry) throws SQLException {
         st.execute("UPDATE Config SET Value=\"" + entry.valueToString() + "\" WHERE Id=\"" + entry.Id() + "\";");
-        return getValue(st, entry);
+        getValue(st, entry);
     }
 }

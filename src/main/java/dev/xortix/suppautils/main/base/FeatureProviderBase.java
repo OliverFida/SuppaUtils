@@ -22,26 +22,26 @@ public abstract class FeatureProviderBase extends CommandBuilderBase {
         return ConfigProvider.CONFIG_ENTRIES.get(getConfigEntryId(key));
     }
 
-    public boolean getIsEnabled() throws Exception {
+    public boolean getIsEnabled() {
         BooleanConfigEntry temp = (BooleanConfigEntry) getConfigEntry("enabled");
         return temp.Value;
     }
 
     public abstract void init();
 
-    public void enable() throws Exception {
+    public void enable() {
         BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
         configEntry.Value = true;
         ConfigProvider.storeEntry(configEntry);
     }
 
-    public void disable() throws Exception {
+    public void disable() {
         BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
         configEntry.Value = false;
         ConfigProvider.storeEntry(configEntry);
     }
 
-    protected int checkFeatureEnabledForCommand(CommandContext<ServerCommandSource> ctx) throws Exception {
+    protected int checkFeatureEnabledForCommand(CommandContext<ServerCommandSource> ctx) {
         if (!getIsEnabled()) {
             ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
             return Command.SINGLE_SUCCESS;

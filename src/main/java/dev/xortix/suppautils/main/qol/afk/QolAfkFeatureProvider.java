@@ -59,7 +59,7 @@ public class QolAfkFeatureProvider extends FeatureProviderBase {
     }
 
     @Override
-    public void disable() throws Exception {
+    public void disable() {
         super.disable();
 
         ArrayList<UUID> uuids = new ArrayList<>(PLAYERS_AFK);
