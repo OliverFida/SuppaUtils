@@ -28,6 +28,7 @@ public final class TeleportHelper {
     private static boolean isInitializing, isInitialized = false;
     private static final Map<UUID, Long> LAST_TELEPORT = new HashMap<>();
     private static final Map<UUID, Vec3d> LAST_POSITION = new HashMap<>();
+    private static final Map<UUID, String> LAST_DIMENSION = new HashMap<>();
 
     public static void init() {
         try {
@@ -37,7 +38,6 @@ public final class TeleportHelper {
             CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, "tpCountdown", IntegerArgumentType.integer(0, 30), "seconds"));
             CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, "tpCooldown", IntegerArgumentType.integer(0, 3600), "seconds"));
             CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, "tpInterDim", BoolArgumentType.bool(), "enabled"));
-            CommandsManager.addToRegistrationList(new SuppaCommand(SuppaCommand.TYPE.CONFIG, "tpBack", BoolArgumentType.bool(), "enabled"));
 
             isInitialized = true;
         } catch (Exception ex) {
@@ -68,6 +68,7 @@ public final class TeleportHelper {
             }
 
             Vec3d positionBefore = player.getEntityPos();
+            String dimensionBefore = player.getEntityWorld().getRegistryKey().getValue().toString();
             ctx.getSource().sendFeedback(() -> Text.literal("§6Teleportationsvorgang startet... Nicht bewegen!"), false);
             for (int s = 0; s < countdownSeconds; s++) {
                 int restSeconds = countdownSeconds - s;
@@ -92,6 +93,7 @@ public final class TeleportHelper {
             } else {
                 LAST_TELEPORT.put(player.getUuid(), System.currentTimeMillis());
                 LAST_POSITION.put(player.getUuid(), positionBefore);
+                LAST_DIMENSION.put(player.getUuid(), dimensionBefore);
             }
         } catch (Exception ex) {
             Logger.log(Logger.LogCategory.HOMES, Logger.LogType.ERROR, ex.getMessage());
@@ -99,7 +101,21 @@ public final class TeleportHelper {
     }
 
     public static void teleportPlayerBack(@NotNull CommandContext<ServerCommandSource> ctx) {
-        // OFDO: TeleportHelper.teleportPlayerBack
+        try {
+            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            assert player != null;
+
+            Vec3d lastPosition = LAST_POSITION.get(player.getUuid());
+            String lastDimension = LAST_DIMENSION.get(player.getUuid());
+            if (lastPosition == null || lastDimension == null) {
+                ctx.getSource().sendFeedback(() -> Text.literal("§cKeine letzte Position bekannt."), false);
+                return;
+            }
+
+            new Thread(() -> teleportPlayer(ctx, lastDimension, lastPosition.x, lastPosition.y, lastPosition.z)).start();
+        } catch (Exception ex) {
+            Logger.log(Logger.LogCategory.HOMES, Logger.LogType.ERROR, ex.getMessage());
+        }
     }
 
     public static void clearChaches() {
@@ -109,6 +125,7 @@ public final class TeleportHelper {
 
         LAST_TELEPORT.clear();
         LAST_POSITION.clear();
+        LAST_DIMENSION.clear();
     }
 
     private static @NotNull IntegerConfigEntry getConfigTpCountdown() {
@@ -121,9 +138,5 @@ public final class TeleportHelper {
 
     private static @NotNull BooleanConfigEntry getConfigTpInterDim() {
         return (BooleanConfigEntry) ConfigProvider.getGlobalConfigEntry("tpInterDim");
-    }
-
-    private static @NotNull BooleanConfigEntry getConfigTpBack() {
-        return (BooleanConfigEntry) ConfigProvider.getGlobalConfigEntry("tpBack");
     }
 }

@@ -93,34 +93,6 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
                                 .executes(ctx -> handleCommandHome(ctx, false))
                         )
         ));
-//        CommandsManager.addToRegistrationList(new FullyCustomCommand(
-//                literal("back")
-//                        .executes(ctx -> {
-//
-//                            try {
-//                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
-//                                    return Command.SINGLE_SUCCESS;
-//                                if (!getConfigBack().Value) {
-//                                    ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
-//                                    return Command.SINGLE_SUCCESS;
-//                                }
-//
-//                                ServerPlayerEntity player = ctx.getSource().getPlayer();
-//                                assert player != null;
-//                                Vec3d lastPosition = LAST_POSITION.get(player.getUuid());
-//                                if (lastPosition == null) {
-//                                    ctx.getSource().sendFeedback(() -> Text.literal("§cKeine letzte Position bekannt."), false);
-//                                    return Command.SINGLE_SUCCESS;
-//                                }
-//
-//                                new Thread(() -> teleportPlayer(ctx, player.getEntityWorld().getRegistryKey().getValue().toString(), lastPosition.x, lastPosition.y, lastPosition.z)).start();
-//
-//                                return Command.SINGLE_SUCCESS;
-//                            } catch (Exception ex) {
-//                                return handleCommandException(ex);
-//                            }
-//                        })
-//        ));
     }
 
     @Override

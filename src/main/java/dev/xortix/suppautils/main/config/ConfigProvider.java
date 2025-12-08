@@ -67,8 +67,6 @@ public final class ConfigProvider {
         Entries.put(entry.Id(), entry);
         entry = new BooleanConfigEntry("tpInterDim", false);
         Entries.put(entry.Id(), entry);
-        entry = new BooleanConfigEntry("tpBack", false);
-        Entries.put(entry.Id(), entry);
 
         // QOL Initials
         feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_INITIALS);
@@ -91,6 +89,11 @@ public final class ConfigProvider {
         entry = new BooleanConfigEntry(feature, "allowNether", false);
         Entries.put(entry.Id(), entry);
         entry = new BooleanConfigEntry(feature, "allowEnd", false);
+        Entries.put(entry.Id(), entry);
+
+        // QOL Back
+        feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_BACK);
+        entry = new BooleanConfigEntry(feature, "enabled", false);
         Entries.put(entry.Id(), entry);
     }
 

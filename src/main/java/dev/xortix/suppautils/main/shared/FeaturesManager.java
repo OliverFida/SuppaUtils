@@ -2,6 +2,7 @@ package dev.xortix.suppautils.main.shared;
 
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.features.qol.afk.QolAfkFeatureProvider;
+import dev.xortix.suppautils.main.features.qol.back.QolBackFeatureProvider;
 import dev.xortix.suppautils.main.features.qol.homes.QolHomesFeatureProvider;
 import dev.xortix.suppautils.main.features.qol.initials.QolInitialsFeatureProvider;
 
@@ -26,6 +27,10 @@ public class FeaturesManager {
 
         feature = new QolHomesFeatureProvider();
         Features.put(FEATURE.QOL_HOMES, feature);
+        feature.init();
+
+        feature = new QolBackFeatureProvider();
+        Features.put(FEATURE.QOL_BACK, feature);
         feature.init();
     }
 
