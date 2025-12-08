@@ -11,6 +11,7 @@ import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.FeaturesManager;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
+import net.minecraft.block.Blocks;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -19,7 +20,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -52,7 +55,6 @@ public final class TeleportHelper {
             ServerPlayerEntity player = ctx.getSource().getPlayer();
             assert player != null;
             int countdownSeconds = getConfigTpCountdown().Value;
-            // OFDO: Safety checks: WillSuffocate, BlockUnderneath
 
             // Check cooldown
             long lastTeleport = LAST_TELEPORT.getOrDefault(player.getUuid(), 0L);
@@ -66,6 +68,9 @@ public final class TeleportHelper {
                 ctx.getSource().sendFeedback(() -> Text.literal("§cDu darfst dich nicht zwischen Dimensionen teleportieren!"), false);
                 return;
             }
+
+            // Check secure
+            if (!checkTpSecure(ctx, dimension, x, y, z)) return;
 
             Vec3d positionBefore = player.getEntityPos();
             String dimensionBefore = player.getEntityWorld().getRegistryKey().getValue().toString();
@@ -126,6 +131,37 @@ public final class TeleportHelper {
         LAST_TELEPORT.clear();
         LAST_POSITION.clear();
         LAST_DIMENSION.clear();
+    }
+
+    private static @NotNull Boolean checkTpSecure(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z) {
+        try {
+            RegistryKey<World> regKeyDim = RegistryKey.of(RegistryKeys.WORLD, Identifier.of(dimension));
+            ServerWorld world = Main.SERVER.getWorld(regKeyDim);
+            if (world == null) throw new Exception();
+
+            // Check BlockUnderneath
+            {
+                int maxFall = 3;
+                for (int i = 1; i <= maxFall + 1; i++) {
+                    BlockPos pos = new BlockPos(x.intValue(), y.intValue() - i, z.intValue());
+                    if (!world.getBlockState(pos).isAir() || world.getBlockState(pos).getBlock().equals(Blocks.WATER))
+                        break;
+
+                    if (i == maxFall + 1) throw new Exception();
+                }
+            }
+
+            // Check WillSuffocate
+            {
+                BlockPos pos = new BlockPos(x.intValue(), y.intValue() + 1, z.intValue());
+                if (!world.getBlockState(pos).isAir()) throw new Exception();
+            }
+
+            return true;
+        } catch (Exception ignored) {
+            ctx.getSource().sendFeedback(() -> Text.literal("§cAbbruch... Dein Ziel ist nicht sicher."), false);
+            return false;
+        }
     }
 
     private static @NotNull IntegerConfigEntry getConfigTpCountdown() {
