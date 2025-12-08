@@ -3,9 +3,12 @@ package dev.xortix.suppautils.main.config.import_export;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.Command;
+import dev.xortix.suppautils.main.base.FeatureProviderBase;
+import dev.xortix.suppautils.main.config.BooleanConfigEntry;
 import dev.xortix.suppautils.main.config.ConfigEntryBase;
 import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.log.Logger;
+import dev.xortix.suppautils.main.shared.FeaturesManager;
 import dev.xortix.suppautils.main.shared.commands.CommandBuilderBase;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.CustomSuppaCommand;
@@ -150,7 +153,16 @@ public final class ConfigImportExportProvider extends CommandBuilderBase {
                 String value = valueObj.toString();
 
                 entry.stringToValue(value);
-                ConfigProvider.updateEntry(entry);
+                if (key.equals("enabled")) {
+                    String featureEnumString = category.toUpperCase() + "_" + feature.toUpperCase();
+                    FeaturesManager.FEATURE featureEnum = FeaturesManager.FEATURE.valueOf(featureEnumString);
+
+                    FeatureProviderBase featureProvider = FeaturesManager.Features.get(featureEnum);
+                    if (((BooleanConfigEntry) entry).Value) featureProvider.enable();
+                    else featureProvider.disable();
+                } else {
+                    ConfigProvider.updateEntry(entry);
+                }
             }
         } catch (Exception ex) {
             Logger.log(Logger.LogCategory.GLOBAL, Logger.LogType.ERROR, "Config import failed: " + ex.getMessage());

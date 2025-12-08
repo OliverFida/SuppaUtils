@@ -1,15 +1,17 @@
 package dev.xortix.suppautils.main.log;
 
 import dev.xortix.suppautils.main.Main;
+import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
 public final class Logger {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Main.MOD_ID);
+    private static final String PREFIX = FabricLoader.getInstance().isDevelopmentEnvironment() ? "" : "[" + Main.MOD_ID + "] ";
 
     public static void log(@NotNull LogCategory category, @NotNull LogType type, @NotNull String message) {
-        String finalMessage = "";
+        String finalMessage = PREFIX;
 
         switch (category) {
             case GLOBAL:

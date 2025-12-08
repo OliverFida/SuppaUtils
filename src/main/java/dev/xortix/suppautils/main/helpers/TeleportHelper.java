@@ -125,7 +125,7 @@ public final class TeleportHelper {
 
     public static void clearChaches() {
         if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_HOMES).getIsEnabled()) return;
-        if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_SPAWN).getIsEnabled()) return;
+        // OFDO: if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_SPAWN).getIsEnabled()) return;
         if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_BACK).getIsEnabled()) return;
 
         LAST_TELEPORT.clear();
