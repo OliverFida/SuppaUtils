@@ -40,6 +40,6 @@ public abstract class ConfigEntryBase<T> {
         Value = defaultValue;
     }
 
-    protected abstract @NotNull String valueToString();
-    protected abstract void stringToValue(@NotNull String stringValue);
+    public abstract @NotNull String valueToString();
+    public abstract void stringToValue(@NotNull String stringValue);
 }

@@ -13,12 +13,12 @@ public final class BooleanConfigEntry extends ConfigEntryBase<Boolean> {
     }
 
     @Override
-    protected @NotNull String valueToString() {
+    public @NotNull String valueToString() {
         return Value ? "true" : "false";
     }
 
     @Override
-    protected void stringToValue(@NotNull String stringValue) {
+    public void stringToValue(@NotNull String stringValue) {
         String input = stringValue.trim().toLowerCase();
 
         Value = input.equals("true");

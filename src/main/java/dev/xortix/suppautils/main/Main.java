@@ -1,6 +1,7 @@
 package dev.xortix.suppautils.main;
 
 import dev.xortix.suppautils.main.config.ConfigProvider;
+import dev.xortix.suppautils.main.config.import_export.ConfigImportExportProvider;
 import dev.xortix.suppautils.main.db.DBProvider;
 import dev.xortix.suppautils.main.helpers.TeleportHelper;
 import dev.xortix.suppautils.main.log.Logger;
@@ -34,6 +35,7 @@ public class Main implements ModInitializer {
         FeaturesManager.init();
 
         // Config
+        ConfigImportExportProvider.init();
         ConfigProvider.init();
 
         // Commands

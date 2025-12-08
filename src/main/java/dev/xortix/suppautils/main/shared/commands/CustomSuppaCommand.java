@@ -14,9 +14,15 @@ public final class CustomSuppaCommand extends CommandBase {
     private final FeatureProviderBase _featureProvider;
     private final LiteralArgumentBuilder<ServerCommandSource> _innerBuilder;
 
-    public CustomSuppaCommand(@NotNull FeatureProviderBase featureProvider, @NotNull LiteralArgumentBuilder<ServerCommandSource> innerBuilder) {
+    /// For Feature-Specific commands
+    public CustomSuppaCommand(FeatureProviderBase featureProvider, @NotNull LiteralArgumentBuilder<ServerCommandSource> innerBuilder) {
         _featureProvider = featureProvider;
         _innerBuilder = innerBuilder;
+    }
+
+    /// For Global commands
+    public CustomSuppaCommand(@NotNull LiteralArgumentBuilder<ServerCommandSource> innerBuilder) {
+        this(null, innerBuilder);
     }
 
     @Override
@@ -26,7 +32,14 @@ public final class CustomSuppaCommand extends CommandBase {
 
     private @NotNull LiteralArgumentBuilder<ServerCommandSource> getBuilder() {
         // Feature
-        LiteralArgumentBuilder<ServerCommandSource> featureBuilder = literal(_featureProvider.getConfigFeature()).then(_innerBuilder);
+        LiteralArgumentBuilder<ServerCommandSource> featureBuilder;
+        if (_featureProvider != null) {
+            // feature specific
+            featureBuilder = literal(_featureProvider.getConfigFeature()).then(_innerBuilder);
+        } else {
+            // global
+            featureBuilder = _innerBuilder;
+        }
 
         return literal("suppa").then(featureBuilder);
     }

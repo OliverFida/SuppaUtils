@@ -13,12 +13,12 @@ public final class IntegerConfigEntry extends ConfigEntryBase<Integer> {
     }
 
     @Override
-    protected @NotNull String valueToString() {
+    public @NotNull String valueToString() {
         return Value.toString();
     }
 
     @Override
-    protected void stringToValue(@NotNull String stringValue) {
+    public void stringToValue(@NotNull String stringValue) {
         Value = Integer.parseInt(stringValue);
     }
 }
