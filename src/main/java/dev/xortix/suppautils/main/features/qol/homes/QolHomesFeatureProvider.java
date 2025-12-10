@@ -14,9 +14,6 @@ import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.FullyCustomCommand;
 import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
@@ -26,9 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public final class QolHomesFeatureProvider extends FeatureProviderBase {
     @Override
@@ -57,7 +57,7 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
                                 if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                                     return Command.SINGLE_SUCCESS;
 
-                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                ServerPlayer player = ctx.getSource().getPlayer();
                                 assert player != null;
 
                                 List<HomeEntry> homes = getHomesForPlayer(player);
@@ -65,7 +65,7 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
                                 homes.forEach(home -> homeNames.add(home.Name));
 
                                 String message = "§6Deine Homes: " + String.join(", ", homeNames);
-                                ctx.getSource().sendFeedback(() -> Text.literal(message), false);
+                                ctx.getSource().sendSuccess(() -> Component.literal(message), false);
                                 return Command.SINGLE_SUCCESS;
                             } catch (Exception ex) {
                                 return handleCommandException(ex);
@@ -139,14 +139,14 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private int handleCommandSetHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
+    private int handleCommandSetHome(@NotNull CommandContext<CommandSourceStack> ctx, @NotNull Boolean useDefaultName) {
         try {
             if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
             if (!checkSetHomeAllowedInDim(ctx))
                 return Command.SINGLE_SUCCESS;
 
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            ServerPlayer player = ctx.getSource().getPlayer();
             assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
@@ -159,47 +159,47 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
             if (existingEntry != null) {
                 // Update Entry
                 updateHome(player, existingEntry);
-                ctx.getSource().sendFeedback(() -> Text.literal("§aHome \"" + name + "\" aktualisiert."), false);
+                ctx.getSource().sendSuccess(() -> Component.literal("§aHome \"" + name + "\" aktualisiert."), false);
                 return Command.SINGLE_SUCCESS;
             }
 
             // Check maxHomes exceeded
             if (homes.size() >= getConfigMaxHomes().Value) {
                 // Reject -> maxHomes reached
-                ctx.getSource().sendFeedback(() -> Text.literal("§cDu hast die maximale Anzahl an Homes erreicht."), false);
+                ctx.getSource().sendSuccess(() -> Component.literal("§cDu hast die maximale Anzahl an Homes erreicht."), false);
                 return Command.SINGLE_SUCCESS;
             }
 
             // Insert new Entry
             createHome(player, name);
-            ctx.getSource().sendFeedback(() -> Text.literal("§aHome \"" + name + "\" erstellt."), false);
+            ctx.getSource().sendSuccess(() -> Component.literal("§aHome \"" + name + "\" erstellt."), false);
             return Command.SINGLE_SUCCESS;
         } catch (Exception ex) {
             return handleCommandException(ex);
         }
     }
 
-    private @NotNull Boolean checkSetHomeAllowedInDim(@NotNull CommandContext<ServerCommandSource> ctx) {
-        ServerPlayerEntity player = ctx.getSource().getPlayer();
+    private @NotNull Boolean checkSetHomeAllowedInDim(@NotNull CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer player = ctx.getSource().getPlayer();
         assert player != null;
 
-        String dimension = player.getEntityWorld().getRegistryKey().getValue().toString();
+        String dimension = player.level().dimension().location().toString();
 
         if ((dimension.equals("minecraft:the_nether") && !getConfigAllowNether().Value)
                 || (dimension.equals("minecraft:the_end") && !getConfigAllowEnd().Value)) {
-            ctx.getSource().sendFeedback(() -> Text.literal("§cDu darfst in dieser Dimension keine Homes erstellen."), false);
+            ctx.getSource().sendSuccess(() -> Component.literal("§cDu darfst in dieser Dimension keine Homes erstellen."), false);
             return false;
         }
 
         return true;
     }
 
-    private @NotNull Integer handleCommandDelHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
+    private @NotNull Integer handleCommandDelHome(@NotNull CommandContext<CommandSourceStack> ctx, @NotNull Boolean useDefaultName) {
         try {
             if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
 
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            ServerPlayer player = ctx.getSource().getPlayer();
             assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
@@ -211,25 +211,25 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
             HomeEntry existingEntry = homes.stream().filter(h -> h.Name.equalsIgnoreCase(name)).findFirst().orElse(null);
             if (existingEntry == null) {
                 // Reject -> home does not exist
-                ctx.getSource().sendFeedback(() -> Text.literal("§cHome\"" + name + "\" existiert nicht."), false);
+                ctx.getSource().sendSuccess(() -> Component.literal("§cHome\"" + name + "\" existiert nicht."), false);
                 return Command.SINGLE_SUCCESS;
             }
 
             // Delete Entry
             removeHome(existingEntry);
-            ctx.getSource().sendFeedback(() -> Text.literal("§aHome \"" + name + "\" §cgelöscht§a."), false);
+            ctx.getSource().sendSuccess(() -> Component.literal("§aHome \"" + name + "\" §cgelöscht§a."), false);
             return Command.SINGLE_SUCCESS;
         } catch (Exception ex) {
             return handleCommandException(ex);
         }
     }
 
-    private @NotNull Integer handleCommandHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
+    private @NotNull Integer handleCommandHome(@NotNull CommandContext<CommandSourceStack> ctx, @NotNull Boolean useDefaultName) {
         try {
             if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                 return Command.SINGLE_SUCCESS;
 
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            ServerPlayer player = ctx.getSource().getPlayer();
             assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
@@ -241,7 +241,7 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
             HomeEntry existingEntry = homes.stream().filter(h -> h.Name.equalsIgnoreCase(name)).findFirst().orElse(null);
             if (existingEntry == null) {
                 // Reject -> home does not exist
-                ctx.getSource().sendFeedback(() -> Text.literal("§cHome \"" + name + "\" existiert nicht."), false);
+                ctx.getSource().sendSuccess(() -> Component.literal("§cHome \"" + name + "\" existiert nicht."), false);
                 return Command.SINGLE_SUCCESS;
             }
 
@@ -253,19 +253,19 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private @NotNull List<HomeEntry> getHomesForPlayer(@NotNull ServerPlayerEntity player) {
+    private @NotNull List<HomeEntry> getHomesForPlayer(@NotNull ServerPlayer player) {
         List<HomeEntry> foundHomes = new ArrayList<>();
 
         Homes.forEach((id, entry) -> {
-            if (entry.Owner.equals(player.getUuidAsString())) foundHomes.add(entry);
+            if (entry.Owner.equals(player.getStringUUID())) foundHomes.add(entry);
         });
 
         return foundHomes;
     }
 
-    private void createHome(@NotNull ServerPlayerEntity player, @NotNull String name) {
+    private void createHome(@NotNull ServerPlayer player, @NotNull String name) {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
-            HomeEntry entry = new HomeEntry(player.getUuidAsString(), name, player.getEntityWorld().getRegistryKey().getValue().toString(), player.getX(), player.getY(), player.getZ());
+            HomeEntry entry = new HomeEntry(player.getStringUUID(), name, player.level().dimension().location().toString(), player.getX(), player.getY(), player.getZ());
             ResultSet rs = insertEntry(st, entry);
             entry = new HomeEntry(rs);
             Homes.put(entry.Id(), entry);
@@ -274,7 +274,7 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private void updateHome(@NotNull ServerPlayerEntity player, @NotNull HomeEntry entry) {
+    private void updateHome(@NotNull ServerPlayer player, @NotNull HomeEntry entry) {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {
             entry.X = player.getX();
             entry.Y = player.getY();

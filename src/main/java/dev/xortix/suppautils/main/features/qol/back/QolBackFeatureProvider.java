@@ -6,10 +6,10 @@ import dev.xortix.suppautils.main.helpers.TeleportHelper;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.FullyCustomCommand;
 import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 public class QolBackFeatureProvider extends FeatureProviderBase {
     @Override
@@ -34,7 +34,7 @@ public class QolBackFeatureProvider extends FeatureProviderBase {
                                 if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
                                     return Command.SINGLE_SUCCESS;
 
-                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                ServerPlayer player = ctx.getSource().getPlayer();
                                 assert player != null;
 
                                 TeleportHelper.teleportPlayerBack(ctx);

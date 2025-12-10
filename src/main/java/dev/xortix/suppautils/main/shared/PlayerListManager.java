@@ -4,44 +4,43 @@ import dev.xortix.suppautils.main.Main;
 import dev.xortix.suppautils.main.features.qol.afk.QolAfkFeatureProvider;
 import dev.xortix.suppautils.main.features.qol.initials.InitialsEntry;
 import dev.xortix.suppautils.main.features.qol.initials.QolInitialsFeatureProvider;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
 import java.util.Collection;
 import java.util.EnumSet;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.server.level.ServerPlayer;
 
 public class PlayerListManager {
     public static void updatePlayerList() {
         if (Main.SERVER == null) return;
 
-        EnumSet<PlayerListS2CPacket.Action> actions = EnumSet.of(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME);
-        Collection<ServerPlayerEntity> players = Main.SERVER.getPlayerManager().getPlayerList();
+        EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME);
+        Collection<ServerPlayer> players = Main.SERVER.getPlayerList().getPlayers();
 
-        PlayerListS2CPacket packet = new PlayerListS2CPacket(actions, players);
-        Main.SERVER.getPlayerManager().sendToAll(packet);
+        ClientboundPlayerInfoUpdatePacket packet = new ClientboundPlayerInfoUpdatePacket(actions, players);
+        Main.SERVER.getPlayerList().broadcastAll(packet);
     }
 
-    public static void updatePlayerListEntryForPlayer(ServerPlayerEntity player) {
+    public static void updatePlayerListEntryForPlayer(ServerPlayer player) {
         if (Main.SERVER == null) return;
 
-        PlayerListS2CPacket packet = new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME, player);
-        Main.SERVER.getPlayerManager().sendToAll(packet);
+        ClientboundPlayerInfoUpdatePacket packet = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, player);
+        Main.SERVER.getPlayerList().broadcastAll(packet);
     }
 
-    public static Text getPlayerListName(ServerPlayerEntity player) {
+    public static Component getPlayerListName(ServerPlayer player) {
         String username = player.getName().getString();
-        MutableText customName = Text.empty();
+        MutableComponent customName = Component.empty();
 
         // AFK
         QolAfkFeatureProvider qolAfkFeatureProvider = (QolAfkFeatureProvider) FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_AFK);
-        if (qolAfkFeatureProvider.PLAYERS_AFK.contains(player.getUuid())) customName.append("[AFK]").formatted(Formatting.GRAY);
+        if (qolAfkFeatureProvider.PLAYERS_AFK.contains(player.getUUID())) customName.append("[AFK]").withStyle(ChatFormatting.GRAY);
 
         // INITIALS
         QolInitialsFeatureProvider qolInitialsFeatureProvider = (QolInitialsFeatureProvider) FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_INITIALS);
-        InitialsEntry initials = qolInitialsFeatureProvider.getInitials().get(player.getUuid());
+        InitialsEntry initials = qolInitialsFeatureProvider.getInitials().get(player.getUUID());
         if (initials != null) customName.append("[" + initials.Initials + "]");
 
         // Username

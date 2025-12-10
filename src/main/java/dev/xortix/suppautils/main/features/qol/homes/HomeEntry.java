@@ -1,10 +1,10 @@
 package dev.xortix.suppautils.main.features.qol.homes;
 
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import net.minecraft.resources.ResourceLocation;
 
 public final class HomeEntry {
     public @NotNull String Id() {
@@ -12,7 +12,7 @@ public final class HomeEntry {
     }
     public final String Owner;
     public final String Name;
-    private Identifier _dimension;
+    private ResourceLocation _dimension;
     public @NotNull String getDimension() {
         return _dimension.toString();
     }
@@ -41,6 +41,6 @@ public final class HomeEntry {
     private void stringToDimension(@NotNull String stringValue) {
         String input = stringValue.trim().toLowerCase();
 
-        _dimension = Identifier.tryParse(input);
+        _dimension = ResourceLocation.tryParse(input);
     }
 }

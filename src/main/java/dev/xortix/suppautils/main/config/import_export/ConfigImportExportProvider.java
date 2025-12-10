@@ -13,7 +13,7 @@ import dev.xortix.suppautils.main.shared.commands.CommandBuilderBase;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.CustomSuppaCommand;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Reader;
@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 public final class ConfigImportExportProvider extends CommandBuilderBase {
     private static boolean isInitializing, isInitialized = false;
@@ -35,17 +35,17 @@ public final class ConfigImportExportProvider extends CommandBuilderBase {
             isInitializing = true;
 
             CommandsManager.addToRegistrationList(new CustomSuppaCommand(literal("export")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> source.hasPermission(2))
                     .executes(ctx -> {
                         try {
                             int result = exportConfig();
 
                             switch (result) {
                                 case 200:
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§aConfig exported."), false);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("§aConfig exported."), false);
                                     break;
                                 case 400:
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§cConfig export failed."), false);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("§cConfig export failed."), false);
                                     break;
                             }
 
@@ -56,20 +56,20 @@ public final class ConfigImportExportProvider extends CommandBuilderBase {
                     })
             ));
             CommandsManager.addToRegistrationList(new CustomSuppaCommand(literal("import")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> source.hasPermission(2))
                     .executes(ctx -> {
                         try {
                             int result = importConfig();
 
                             switch (result) {
                                 case 200:
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§aConfig imported."), false);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("§aConfig imported."), false);
                                     break;
                                 case 400:
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§cConfig import failed."), false);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("§cConfig import failed."), false);
                                     break;
                                 case 404:
-                                    ctx.getSource().sendFeedback(() -> Text.literal("§cConfig import failed... No file to import."), false);
+                                    ctx.getSource().sendSuccess(() -> Component.literal("§cConfig import failed... No file to import."), false);
                                     break;
                             }
 

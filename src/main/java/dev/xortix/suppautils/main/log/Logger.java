@@ -38,7 +38,7 @@ public final class Logger {
             case CRITICAL:
                 LOGGER.error(finalMessage);
                 if (Main.SERVER != null)
-                    Main.SERVER.stop(false);
+                    Main.SERVER.halt(false);
                 // OFDO: Stop server in every possible way
                 break;
             case ERROR:

@@ -7,8 +7,8 @@ import dev.xortix.suppautils.main.config.ConfigEntryBase;
 import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.commands.CommandBuilderBase;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,9 +64,9 @@ public abstract class FeatureProviderBase extends CommandBuilderBase {
         ConfigProvider.updateEntry(configEntry);
     }
 
-    protected final int checkFeatureEnabledForCommand(CommandContext<ServerCommandSource> ctx) {
+    protected final int checkFeatureEnabledForCommand(CommandContext<CommandSourceStack> ctx) {
         if (!getIsEnabled()) {
-            ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
+            ctx.getSource().sendSuccess(() -> Component.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
             return Command.SINGLE_SUCCESS;
         }
 
