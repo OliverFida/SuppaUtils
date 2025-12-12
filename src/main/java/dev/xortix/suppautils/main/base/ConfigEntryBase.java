@@ -1,6 +1,6 @@
-package dev.xortix.suppautils.main.config;
+package dev.xortix.suppautils.main.base;
 
-import dev.xortix.suppautils.main.base.FeatureProviderBase;
+import dev.xortix.suppautils.main.config.ConfigProvider;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class ConfigEntryBase<T> {

@@ -1,4 +1,4 @@
-package dev.xortix.suppautils.main.db;
+package dev.xortix.suppautils.main.base;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,5 +1,6 @@
 package dev.xortix.suppautils.main.db;
 
+import dev.xortix.suppautils.main.base.MigrationBase;
 import dev.xortix.suppautils.main.db.migrations.M20251124_2000_Init;
 import dev.xortix.suppautils.main.db.migrations.M20251124_2102_CreateTableInitials;
 import dev.xortix.suppautils.main.db.migrations.M20251206_0110_AlterTableInitials;

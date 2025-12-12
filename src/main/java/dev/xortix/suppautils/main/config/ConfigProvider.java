@@ -1,5 +1,6 @@
 package dev.xortix.suppautils.main.config;
 
+import dev.xortix.suppautils.main.base.ConfigEntryBase;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.db.DBProvider;
 import dev.xortix.suppautils.main.log.Logger;

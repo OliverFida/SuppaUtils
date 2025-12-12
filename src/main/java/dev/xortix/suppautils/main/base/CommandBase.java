@@ -1,4 +1,4 @@
-package dev.xortix.suppautils.main.shared.commands;
+package dev.xortix.suppautils.main.base;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandRegistryAccess;

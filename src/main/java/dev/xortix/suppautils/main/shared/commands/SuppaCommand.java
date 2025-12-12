@@ -9,6 +9,8 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import dev.xortix.suppautils.main.base.CommandBase;
+import dev.xortix.suppautils.main.base.ConfigEntryBase;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import dev.xortix.suppautils.main.config.*;
 import net.minecraft.command.CommandRegistryAccess;

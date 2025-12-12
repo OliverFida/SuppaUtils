@@ -1,6 +1,6 @@
 package dev.xortix.suppautils.main.db.migrations;
 
-import dev.xortix.suppautils.main.db.MigrationBase;
+import dev.xortix.suppautils.main.base.MigrationBase;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;

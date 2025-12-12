@@ -9,7 +9,7 @@ import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.config.IntegerConfigEntry;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.FeaturesManager;
-import dev.xortix.suppautils.main.shared.commands.CommandBuilderBase;
+import dev.xortix.suppautils.main.base.CommandBuilderBase;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
 import net.minecraft.block.Blocks;

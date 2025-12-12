@@ -1,4 +1,4 @@
-package dev.xortix.suppautils.main.shared.commands;
+package dev.xortix.suppautils.main.base;
 
 import com.mojang.brigadier.context.CommandContext;
 import dev.xortix.suppautils.main.log.Logger;

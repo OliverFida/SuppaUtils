@@ -1,5 +1,6 @@
 package dev.xortix.suppautils.main.config;
 
+import dev.xortix.suppautils.main.base.ConfigEntryBase;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import org.jetbrains.annotations.NotNull;
 
