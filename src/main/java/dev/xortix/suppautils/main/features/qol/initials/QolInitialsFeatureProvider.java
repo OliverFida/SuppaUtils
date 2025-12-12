@@ -58,7 +58,6 @@ public final class QolInitialsFeatureProvider extends FeatureProviderBase {
         CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("set")
                 .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("newInitials", StringArgumentType.word())
-                                .requires(source -> source.hasPermissionLevel(2))
                                 .executes(ctx -> {
                                     try {
                                         Collection<PlayerConfigEntry> players = GameProfileArgumentType.getProfileArgument(ctx, "player");
@@ -87,7 +86,6 @@ public final class QolInitialsFeatureProvider extends FeatureProviderBase {
         ));
         CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("remove")
                 .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .requires(source -> source.hasPermissionLevel(2))
                         .executes(ctx -> {
                             try {
                                 Collection<PlayerConfigEntry> players = GameProfileArgumentType.getProfileArgument(ctx, "player");
@@ -112,7 +110,6 @@ public final class QolInitialsFeatureProvider extends FeatureProviderBase {
                 )
         ));
         CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("import")
-                .requires(source -> source.hasPermissionLevel(2))
                 .executes(ctx -> {
                     try {
                         ctx.getSource().sendFeedback(() -> Text.literal("§8Trying to import initials. Please wait..."), false);
@@ -137,7 +134,6 @@ public final class QolInitialsFeatureProvider extends FeatureProviderBase {
                 })
         ));
         CommandsManager.addToRegistrationList(new CustomSuppaCommand(this, literal("clear")
-                .requires(source -> source.hasPermissionLevel(2))
                 .executes(ctx -> {
                     try {
                         List<InitialsEntry> tempEntries = new ArrayList<>(_initials.values());

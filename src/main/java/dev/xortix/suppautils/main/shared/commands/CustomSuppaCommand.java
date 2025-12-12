@@ -41,6 +41,6 @@ public final class CustomSuppaCommand extends CommandBase {
             featureBuilder = _innerBuilder;
         }
 
-        return literal("suppa").then(featureBuilder);
+        return literal("suppa").requires(source -> source.hasPermissionLevel(2)).then(featureBuilder);
     }
 }

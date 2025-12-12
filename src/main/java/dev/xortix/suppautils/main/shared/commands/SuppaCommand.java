@@ -72,7 +72,7 @@ public final class SuppaCommand extends CommandBase {
         LiteralArgumentBuilder<ServerCommandSource> featureBuilder;
         if (innerBuilder == null) {
             // ENABLE / DISABLE
-            featureBuilder = literal(_featureProvider.getConfigFeature()).requires(source -> source.hasPermissionLevel(2)).executes(executes);
+            featureBuilder = literal(_featureProvider.getConfigFeature()).executes(executes);
         } else if (_featureProvider != null) {
             // Feature specific CONFIG
             featureBuilder = literal(_featureProvider.getConfigFeature()).then(innerBuilder);
@@ -106,7 +106,7 @@ public final class SuppaCommand extends CommandBase {
             categoryBuilder = literal("global").then(typeBuilder);
         }
 
-        return literal("suppa").then(categoryBuilder);
+        return literal("suppa").requires(source -> source.hasPermissionLevel(2)).then(categoryBuilder);
     }
 
     private @NotNull LiteralArgumentBuilder<ServerCommandSource> getConfigBuilder() {

@@ -35,7 +35,6 @@ public final class ConfigImportExportProvider extends CommandBuilderBase {
             isInitializing = true;
 
             CommandsManager.addToRegistrationList(new CustomSuppaCommand(literal("export")
-                    .requires(source -> source.hasPermissionLevel(2))
                     .executes(ctx -> {
                         try {
                             int result = exportConfig();
@@ -56,7 +55,6 @@ public final class ConfigImportExportProvider extends CommandBuilderBase {
                     })
             ));
             CommandsManager.addToRegistrationList(new CustomSuppaCommand(literal("import")
-                    .requires(source -> source.hasPermissionLevel(2))
                     .executes(ctx -> {
                         try {
                             int result = importConfig();
