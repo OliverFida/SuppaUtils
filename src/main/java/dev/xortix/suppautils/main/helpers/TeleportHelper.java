@@ -9,6 +9,7 @@ import dev.xortix.suppautils.main.config.ConfigProvider;
 import dev.xortix.suppautils.main.config.IntegerConfigEntry;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.FeaturesManager;
+import dev.xortix.suppautils.main.shared.commands.CommandBuilderBase;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import dev.xortix.suppautils.main.shared.commands.SuppaCommand;
 import net.minecraft.block.Blocks;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public final class TeleportHelper {
+public final class TeleportHelper extends CommandBuilderBase {
     private static boolean isInitializing, isInitialized = false;
     private static final Map<UUID, Long> LAST_TELEPORT = new HashMap<>();
     private static final Map<UUID, Vec3d> LAST_POSITION = new HashMap<>();
@@ -51,9 +52,12 @@ public final class TeleportHelper {
     }
 
     public static void teleportPlayer(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z) {
+        teleportPlayer(ctx, dimension, x, y, z, null, null);
+    }
+
+    public static void teleportPlayer(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z, Float pitch, Float yaw) {
         try {
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            assert player != null;
+            ServerPlayerEntity player = getPlayer(ctx);
             int countdownSeconds = getConfigTpCountdown().Value;
 
             // Check cooldown
@@ -91,8 +95,13 @@ public final class TeleportHelper {
             assert world != null;
 
             Set<PositionFlag> flags = new HashSet<>();
+            float tempPitch = player.getPitch();
+            float tempYaw = player.getYaw();
+            if (pitch != null) tempPitch = pitch;
+            if (yaw != null) tempYaw = yaw;
+
             ctx.getSource().sendFeedback(() -> Text.literal("§6Teleportiere..."), false);
-            boolean success = player.teleport(world, x, y, z, flags, player.getYaw(), player.getPitch(), false);
+            boolean success = player.teleport(world, x, y, z, flags, tempYaw, tempPitch, false);
             if (!success) {
                 ctx.getSource().sendFeedback(() -> Text.literal("§cTeleportieren fehlgeschlagen."), false);
             } else {
@@ -107,8 +116,7 @@ public final class TeleportHelper {
 
     public static void teleportPlayerBack(@NotNull CommandContext<ServerCommandSource> ctx) {
         try {
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            assert player != null;
+            ServerPlayerEntity player = getPlayer(ctx);
 
             Vec3d lastPosition = LAST_POSITION.get(player.getUuid());
             String lastDimension = LAST_DIMENSION.get(player.getUuid());
@@ -125,7 +133,8 @@ public final class TeleportHelper {
 
     public static void clearChaches() {
         if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_HOMES).getIsEnabled()) return;
-        // OFDO: if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_SPAWN).getIsEnabled()) return;
+        if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_SPAWN).getIsEnabled()) return;
+        // OFDO: if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_TPA).getIsEnabled()) return;
         if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_BACK).getIsEnabled()) return;
 
         LAST_TELEPORT.clear();

@@ -54,11 +54,8 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
                 literal("homes")
                         .executes(ctx -> {
                             try {
-                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
-                                    return Command.SINGLE_SUCCESS;
-
-                                ServerPlayerEntity player = ctx.getSource().getPlayer();
-                                assert player != null;
+                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
+                                ServerPlayerEntity player = getPlayer(ctx);
 
                                 List<HomeEntry> homes = getHomesForPlayer(player);
                                 List<String> homeNames = new ArrayList<>();
@@ -141,13 +138,10 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
 
     private int handleCommandSetHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
         try {
-            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
-                return Command.SINGLE_SUCCESS;
-            if (!checkSetHomeAllowedInDim(ctx))
-                return Command.SINGLE_SUCCESS;
+            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
+            if (!checkSetHomeAllowedInDim(ctx)) return Command.SINGLE_SUCCESS;
+            ServerPlayerEntity player = getPlayer(ctx);
 
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
             String name = tempName;
@@ -179,9 +173,8 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private @NotNull Boolean checkSetHomeAllowedInDim(@NotNull CommandContext<ServerCommandSource> ctx) {
-        ServerPlayerEntity player = ctx.getSource().getPlayer();
-        assert player != null;
+    private @NotNull Boolean checkSetHomeAllowedInDim(@NotNull CommandContext<ServerCommandSource> ctx) throws Exception {
+        ServerPlayerEntity player = getPlayer(ctx);
 
         String dimension = player.getEntityWorld().getRegistryKey().getValue().toString();
 
@@ -196,11 +189,9 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
 
     private @NotNull Integer handleCommandDelHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
         try {
-            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
-                return Command.SINGLE_SUCCESS;
+            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
+            ServerPlayerEntity player = getPlayer(ctx);
 
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
             String name = tempName;
@@ -226,11 +217,9 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
 
     private @NotNull Integer handleCommandHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
         try {
-            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
-                return Command.SINGLE_SUCCESS;
+            if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
+            ServerPlayerEntity player = getPlayer(ctx);
 
-            ServerPlayerEntity player = ctx.getSource().getPlayer();
-            assert player != null;
             String tempName = "Home";
             if (!useDefaultName) tempName = StringArgumentType.getString(ctx, "name");
             String name = tempName;

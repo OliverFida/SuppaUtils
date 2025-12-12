@@ -91,6 +91,33 @@ public final class ConfigProvider {
         entry = new BooleanConfigEntry(feature, "allowEnd", false);
         Entries.put(entry.Id(), entry);
 
+        // QOL Spawn
+        feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_SPAWN);
+        entry = new BooleanConfigEntry(feature, "enabled", false);
+        Entries.put(entry.Id(), entry);
+        entry = new StringConfigEntry(feature, "spawnpoint_dimension", "");
+        Entries.put(entry.Id(), entry);
+        entry = new DoubleConfigEntry(feature, "spawnpoint_x", 0D);
+        Entries.put(entry.Id(), entry);
+        entry = new DoubleConfigEntry(feature, "spawnpoint_y", 0D);
+        Entries.put(entry.Id(), entry);
+        entry = new DoubleConfigEntry(feature, "spawnpoint_z", 0D);
+        Entries.put(entry.Id(), entry);
+        entry = new FloatConfigEntry(feature, "spawnpoint_pitch", 0F);
+        Entries.put(entry.Id(), entry);
+        entry = new FloatConfigEntry(feature, "spawnpoint_yaw", 0F);
+        Entries.put(entry.Id(), entry);
+
+        // QOL Warps
+        feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_WARPS);
+        entry = new BooleanConfigEntry(feature, "enabled", false);
+        Entries.put(entry.Id(), entry);
+
+        // QOL TPA
+        feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_TPA);
+        entry = new BooleanConfigEntry(feature, "enabled", false);
+        Entries.put(entry.Id(), entry);
+
         // QOL Back
         feature = FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_BACK);
         entry = new BooleanConfigEntry(feature, "enabled", false);

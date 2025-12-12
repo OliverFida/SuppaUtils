@@ -49,9 +49,8 @@ public final class QolAfkFeatureProvider extends FeatureProviderBase {
         CommandsManager.addToRegistrationList(new FullyCustomCommand(literal("afk").executes(ctx -> {
             try {
                 if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
+                ServerPlayerEntity player = getPlayer(ctx);
 
-                ServerPlayerEntity player = ctx.getSource().getPlayer();
-                assert player != null;
                 setAfk(player);
                 return Command.SINGLE_SUCCESS;
             } catch (Exception ex) {
