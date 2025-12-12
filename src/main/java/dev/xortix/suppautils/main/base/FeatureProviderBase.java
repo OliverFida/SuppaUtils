@@ -4,7 +4,9 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import dev.xortix.suppautils.main.config.BooleanConfigEntry;
 import dev.xortix.suppautils.main.config.ConfigProvider;
+import dev.xortix.suppautils.main.helpers.TeleportHelper;
 import dev.xortix.suppautils.main.log.Logger;
+import dev.xortix.suppautils.main.shared.chatRequest.ChatRequestManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -60,6 +62,9 @@ public abstract class FeatureProviderBase extends CommandBuilderBase {
         BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
         configEntry.Value = false;
         ConfigProvider.updateEntry(configEntry);
+
+        TeleportHelper.clearChaches();
+        ChatRequestManager.clearChaches();
     }
 
     protected final int checkFeatureEnabledForCommand(CommandContext<ServerCommandSource> ctx) {

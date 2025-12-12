@@ -14,6 +14,7 @@ import java.sql.Statement;
 
 public final class MigrationProvider {
     private static final @NotNull Class<? extends MigrationBase> INITIAL_MIGRATION = M20251124_2000_Init.class;
+    @SuppressWarnings("unchecked")
     private static final @NotNull Class<? extends MigrationBase>[] MIGRATIONS = new Class[] {
             M20251124_2102_CreateTableInitials.class,
             M20251206_0110_AlterTableInitials.class,

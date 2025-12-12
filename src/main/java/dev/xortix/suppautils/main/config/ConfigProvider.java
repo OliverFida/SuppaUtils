@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class ConfigProvider {
-    public static Map<String, ConfigEntryBase<?>> Entries = new HashMap<>();
+    public static final Map<String, ConfigEntryBase<?>> Entries = new HashMap<>();
     private static boolean isInitializing, isInitialized = false;
 
     public static void init() {

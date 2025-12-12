@@ -143,6 +143,7 @@ public final class SuppaCommand extends CommandBase {
         return Command.SINGLE_SUCCESS;
     }
 
+    @SuppressWarnings("SameReturnValue")
     private @NotNull Integer executeConfigFeature(@NotNull CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
         ConfigEntryBase<?> configEntry;
         if (_featureProvider != null) {

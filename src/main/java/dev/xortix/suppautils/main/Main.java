@@ -6,6 +6,7 @@ import dev.xortix.suppautils.main.db.DBProvider;
 import dev.xortix.suppautils.main.helpers.TeleportHelper;
 import dev.xortix.suppautils.main.log.Logger;
 import dev.xortix.suppautils.main.shared.FeaturesManager;
+import dev.xortix.suppautils.main.shared.chatRequest.ChatRequestManager;
 import dev.xortix.suppautils.main.shared.commands.CommandsManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -33,6 +34,7 @@ public class Main implements ModInitializer {
 
         // Features
         FeaturesManager.init();
+        ChatRequestManager.init();
 
         // Config
         ConfigImportExportProvider.init();

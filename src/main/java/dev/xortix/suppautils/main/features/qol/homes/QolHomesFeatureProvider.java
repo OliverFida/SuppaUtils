@@ -54,7 +54,8 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
                 literal("homes")
                         .executes(ctx -> {
                             try {
-                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
+                                if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS)
+                                    return Command.SINGLE_SUCCESS;
                                 ServerPlayerEntity player = getPlayer(ctx);
 
                                 List<HomeEntry> homes = getHomesForPlayer(player);
@@ -104,7 +105,6 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
         super.disable();
 
         Homes.clear();
-        TeleportHelper.clearChaches();
     }
 
     private @NotNull IntegerConfigEntry getConfigMaxHomes() {
@@ -120,7 +120,7 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
     }
 
     private final String HOMES_TABLE_NAME = "QOL_Homes";
-    public Map<String, HomeEntry> Homes = new HashMap<>();
+    public final Map<String, HomeEntry> Homes = new HashMap<>();
 
     private void initHomesFromDb() {
         try (Statement st = DBProvider.getCONNECTION().createStatement()) {

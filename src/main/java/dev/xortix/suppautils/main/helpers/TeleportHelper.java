@@ -55,38 +55,50 @@ public final class TeleportHelper extends CommandBuilderBase {
         teleportPlayer(ctx, dimension, x, y, z, null, null);
     }
 
+    public static void teleportPlayer(@NotNull ServerPlayerEntity player, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z) {
+            teleportPlayer(player, dimension, x, y, z, null, null);
+    }
+
     public static void teleportPlayer(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z, Float pitch, Float yaw) {
         try {
             ServerPlayerEntity player = getPlayer(ctx);
+            teleportPlayer(player, dimension, x, y, z, pitch, yaw);
+        } catch (Exception ex) {
+            Logger.log(Logger.LogCategory.HOMES, Logger.LogType.ERROR, ex.getMessage());
+        }
+    }
+
+    private static void teleportPlayer(@NotNull ServerPlayerEntity player, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z, Float pitch, Float yaw) {
+        try {
             int countdownSeconds = getConfigTpCountdown().Value;
 
             // Check cooldown
             long lastTeleport = LAST_TELEPORT.getOrDefault(player.getUuid(), 0L);
             if (System.currentTimeMillis() - lastTeleport < getConfigTpCooldown().Value * 1000) {
-                ctx.getSource().sendFeedback(() -> Text.literal("§cDu hast dich erst vor kurzem teleportiert."), false);
+                player.sendMessage(Text.literal("§cDu hast dich erst vor kurzem teleportiert."));
                 return;
             }
 
             // Check interDim
             if (!player.getEntityWorld().getRegistryKey().getValue().toString().equals(dimension) && !getConfigTpInterDim().Value) {
-                ctx.getSource().sendFeedback(() -> Text.literal("§cDu darfst dich nicht zwischen Dimensionen teleportieren!"), false);
+                player.sendMessage(Text.literal("§cDu darfst dich nicht zwischen Dimensionen teleportieren!"));
                 return;
             }
 
             // Check secure
-            if (!checkTpSecure(ctx, dimension, x, y, z)) return;
+            if (!checkTpSecure(player, dimension, x, y, z)) return;
 
             Vec3d positionBefore = player.getEntityPos();
             String dimensionBefore = player.getEntityWorld().getRegistryKey().getValue().toString();
-            ctx.getSource().sendFeedback(() -> Text.literal("§6Teleportationsvorgang startet... Nicht bewegen!"), false);
+            player.sendMessage(Text.literal("§6Teleportationsvorgang startet... Nicht bewegen!"));
             for (int s = 0; s < countdownSeconds; s++) {
                 int restSeconds = countdownSeconds - s;
-                ctx.getSource().sendFeedback(() -> Text.literal("§6" + restSeconds + "..."), false);
+                player.sendMessage(Text.literal("§6" + restSeconds + "..."));
                 Thread.sleep(1000);
 
                 Vec3d positionAfter = player.getEntityPos();
                 if (!positionBefore.equals(positionAfter)) {
-                    ctx.getSource().sendFeedback(() -> Text.literal("§cAbbruch... Du hast dich bewegt."), false);
+                    player.sendMessage(Text.literal("§cAbbruch... Du hast dich bewegt."));
                     return;
                 }
             }
@@ -100,10 +112,10 @@ public final class TeleportHelper extends CommandBuilderBase {
             if (pitch != null) tempPitch = pitch;
             if (yaw != null) tempYaw = yaw;
 
-            ctx.getSource().sendFeedback(() -> Text.literal("§6Teleportiere..."), false);
+            player.sendMessage(Text.literal("§6Teleportiere..."));
             boolean success = player.teleport(world, x, y, z, flags, tempYaw, tempPitch, false);
             if (!success) {
-                ctx.getSource().sendFeedback(() -> Text.literal("§cTeleportieren fehlgeschlagen."), false);
+                player.sendMessage(Text.literal("§cTeleportieren fehlgeschlagen."));
             } else {
                 LAST_TELEPORT.put(player.getUuid(), System.currentTimeMillis());
                 LAST_POSITION.put(player.getUuid(), positionBefore);
@@ -131,10 +143,22 @@ public final class TeleportHelper extends CommandBuilderBase {
         }
     }
 
+    public static void teleportPlayerToPlayer(@NotNull ServerPlayerEntity player, @NotNull ServerPlayerEntity target) {
+        try {
+            Vec3d targetPosition = target.getEntityPos();
+            String targetDimension = target.getEntityWorld().getRegistryKey().getValue().toString();
+
+            new Thread(() -> teleportPlayer(player, targetDimension, targetPosition.x, targetPosition.y, targetPosition.z)).start();
+        } catch (Exception ex) {
+            Logger.log(Logger.LogCategory.HOMES, Logger.LogType.ERROR, ex.getMessage());
+        }
+    }
+
     public static void clearChaches() {
         if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_HOMES).getIsEnabled()) return;
         if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_SPAWN).getIsEnabled()) return;
-        // OFDO: if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_TPA).getIsEnabled()) return;
+        if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_TPA).getIsEnabled()) return;
+        // OFDO: if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_WARPS).getIsEnabled()) return;
         if (FeaturesManager.Features.get(FeaturesManager.FEATURE.QOL_BACK).getIsEnabled()) return;
 
         LAST_TELEPORT.clear();
@@ -142,7 +166,7 @@ public final class TeleportHelper extends CommandBuilderBase {
         LAST_DIMENSION.clear();
     }
 
-    private static @NotNull Boolean checkTpSecure(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z) {
+    private static @NotNull Boolean checkTpSecure(@NotNull ServerPlayerEntity player, @NotNull String dimension, @NotNull Double x, @NotNull Double y, @NotNull Double z) {
         try {
             RegistryKey<World> regKeyDim = RegistryKey.of(RegistryKeys.WORLD, Identifier.of(dimension));
             ServerWorld world = Main.SERVER.getWorld(regKeyDim);
@@ -152,7 +176,7 @@ public final class TeleportHelper extends CommandBuilderBase {
             {
                 int maxFall = 3;
                 for (int i = 1; i <= maxFall + 1; i++) {
-                    BlockPos pos = new BlockPos(x.intValue(), y.intValue() - i, z.intValue());
+                    BlockPos pos = new BlockPos((int)Math.floor(x), (int)Math.floor(y) - i, (int)Math.floor(z));
                     if (!world.getBlockState(pos).isAir() || world.getBlockState(pos).getBlock().equals(Blocks.WATER))
                         break;
 
@@ -168,7 +192,7 @@ public final class TeleportHelper extends CommandBuilderBase {
 
             return true;
         } catch (Exception ignored) {
-            ctx.getSource().sendFeedback(() -> Text.literal("§cAbbruch... Dein Ziel ist nicht sicher."), false);
+            player.sendMessage(Text.literal("§cAbbruch... Dein Ziel ist nicht sicher."));
             return false;
         }
     }
