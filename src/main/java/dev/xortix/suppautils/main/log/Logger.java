@@ -1,14 +1,17 @@
 package dev.xortix.suppautils.main.log;
 
 import dev.xortix.suppautils.main.Main;
+import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
-public class Logger {
+public final class Logger {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Main.MOD_ID);
+    private static final String PREFIX = FabricLoader.getInstance().isDevelopmentEnvironment() ? "" : "[" + Main.MOD_ID + "] ";
 
-    public static void log(LogCategory category, LogType type, String message) {
-        String finalMessage = "";
+    public static void log(@NotNull LogCategory category, @NotNull LogType type, @NotNull String message) {
+        String finalMessage = PREFIX;
 
         switch (category) {
             case GLOBAL:
@@ -21,6 +24,9 @@ public class Logger {
                 break;
             case AFK:
                 finalMessage += "[AFK] ";
+                break;
+            case HOMES:
+                finalMessage += "[Homes] ";
                 break;
             default:
                 throw new NotImplementedException("LogCategory '" + category.name() + "' not implemented.");
@@ -65,6 +71,8 @@ public class Logger {
         DATABASE,
 
         INITIALS,
-        AFK
+        AFK,
+        HOMES,
+        WARPS,
     }
 }

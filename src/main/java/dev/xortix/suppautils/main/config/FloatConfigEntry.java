@@ -4,12 +4,12 @@ import dev.xortix.suppautils.main.base.ConfigEntryBase;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
 import org.jetbrains.annotations.NotNull;
 
-public final class DoubleConfigEntry extends ConfigEntryBase<Double> {
-    public DoubleConfigEntry(@NotNull FeatureProviderBase featureProvider, @NotNull String key, @NotNull Double defaultValue) {
+public final class FloatConfigEntry extends ConfigEntryBase<Float> {
+    public FloatConfigEntry(@NotNull FeatureProviderBase featureProvider, @NotNull String key, @NotNull Float defaultValue) {
         super(featureProvider, key, defaultValue);
     }
 
-    public DoubleConfigEntry(@NotNull String key, @NotNull Double defaultValue) {
+    public FloatConfigEntry(@NotNull String key, @NotNull Float defaultValue) {
         super(key, defaultValue);
     }
 
@@ -20,6 +20,6 @@ public final class DoubleConfigEntry extends ConfigEntryBase<Double> {
 
     @Override
     public void stringToValue(@NotNull String stringValue) {
-        Value = Double.parseDouble(stringValue);
+        Value = Float.parseFloat(stringValue);
     }
 }

@@ -3,44 +3,71 @@ package dev.xortix.suppautils.main.base;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import dev.xortix.suppautils.main.config.BooleanConfigEntry;
-import dev.xortix.suppautils.main.config.ConfigEntry;
 import dev.xortix.suppautils.main.config.ConfigProvider;
+import dev.xortix.suppautils.main.helpers.TeleportHelper;
+import dev.xortix.suppautils.main.log.Logger;
+import dev.xortix.suppautils.main.shared.chatRequest.ChatRequestManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
+import org.jetbrains.annotations.NotNull;
 
-public abstract class FeatureProviderBase {
-    public abstract String getConfigCategory();
+public abstract class FeatureProviderBase extends CommandBuilderBase {
+    private boolean isInitializing, isInitialized = false;
 
-    public abstract String getConfigFeature();
+    public abstract @NotNull String getConfigCategory();
 
-    public String getConfigEntryId(String key) {
+    public abstract @NotNull String getConfigFeature();
+
+    public final @NotNull String getConfigEntryId(@NotNull String key) {
         return getConfigCategory() + ";" + getConfigFeature() + ";" + key;
     }
 
-    public ConfigEntry<?> getConfigEntry(String key) {
-        return ConfigProvider.CONFIG_ENTRIES.get(getConfigEntryId(key));
+    public final @NotNull ConfigEntryBase<?> getConfigEntry(@NotNull String key) {
+        return ConfigProvider.Entries.get(getConfigEntryId(key));
     }
 
-    public boolean getIsEnabled() {
+    public final boolean getIsEnabled() {
         BooleanConfigEntry temp = (BooleanConfigEntry) getConfigEntry("enabled");
         return temp.Value;
     }
 
-    public abstract void init();
+    public final void init() {
+        try {
+            if (isInitializing || isInitialized) return;
+            isInitializing = true;
 
+            initImpl();
+
+            isInitialized = true;
+        } catch (Exception ex) {
+            Logger.log(Logger.LogCategory.GLOBAL, Logger.LogType.ERROR, "Initialization of feature \"" + getConfigFeature() + "\" failed: " + ex.getMessage());
+        } finally {
+            isInitializing = false;
+        }
+    }
+
+    @MustBeInvokedByOverriders
+    protected abstract void initImpl();
+
+    @MustBeInvokedByOverriders
     public void enable() {
         BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
         configEntry.Value = true;
-        ConfigProvider.storeEntry(configEntry);
+        ConfigProvider.updateEntry(configEntry);
     }
 
+    @MustBeInvokedByOverriders
     public void disable() {
         BooleanConfigEntry configEntry = (BooleanConfigEntry) getConfigEntry("enabled");
         configEntry.Value = false;
-        ConfigProvider.storeEntry(configEntry);
+        ConfigProvider.updateEntry(configEntry);
+
+        TeleportHelper.clearChaches();
+        ChatRequestManager.clearChaches();
     }
 
-    protected int checkFeatureEnabledForCommnd(CommandContext<ServerCommandSource> ctx) {
+    protected final int checkFeatureEnabledForCommand(CommandContext<ServerCommandSource> ctx) {
         if (!getIsEnabled()) {
             ctx.getSource().sendFeedback(() -> Text.literal("§cDieses Feature wurde vom Admin deaktiviert."), false);
             return Command.SINGLE_SUCCESS;

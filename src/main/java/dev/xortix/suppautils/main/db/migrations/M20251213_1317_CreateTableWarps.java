@@ -6,14 +6,18 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public final class M20251124_2000_Init extends MigrationBase {
+public class M20251213_1317_CreateTableWarps extends MigrationBase {
     @Override
     public void apply(@NotNull Statement st) throws SQLException {
         st.execute("""
-            CREATE TABLE IF NOT EXISTS "_Migrations" (
+            CREATE TABLE QOL_Warps (
                 Id TEXT NOT NULL,
-                AppliedAt TEXT NOT NULL DEFAULT (datetime('now')),
-                CONSTRAINT "_Migrations_PK" PRIMARY KEY (Id)
+                Name TEXT NOT NULL,
+                Dimension TEXT NOT NULL,
+                X NUMERIC NOT NULL,
+                Y NUMERIC NOT NULL,
+                Z NUMERIC NOT NULL,
+                CONSTRAINT QOL_Homes_PK PRIMARY KEY (Id)
             );
         """);
     }

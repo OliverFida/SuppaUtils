@@ -1,19 +1,25 @@
 package dev.xortix.suppautils.main.config;
 
+import dev.xortix.suppautils.main.base.ConfigEntryBase;
 import dev.xortix.suppautils.main.base.FeatureProviderBase;
+import org.jetbrains.annotations.NotNull;
 
-public class BooleanConfigEntry extends ConfigEntry<Boolean> {
-    public BooleanConfigEntry(FeatureProviderBase featureProvider, String key, Boolean defaultValue) {
+public final class BooleanConfigEntry extends ConfigEntryBase<Boolean> {
+    public BooleanConfigEntry(@NotNull FeatureProviderBase featureProvider, @NotNull String key, @NotNull Boolean defaultValue) {
         super(featureProvider, key, defaultValue);
     }
 
+    public BooleanConfigEntry(@NotNull String key, @NotNull Boolean defaultValue) {
+        super(key, defaultValue);
+    }
+
     @Override
-    protected String valueToString() {
+    public @NotNull String valueToString() {
         return Value ? "true" : "false";
     }
 
     @Override
-    protected void stringToValue(String stringValue) {
+    public void stringToValue(@NotNull String stringValue) {
         String input = stringValue.trim().toLowerCase();
 
         Value = input.equals("true");

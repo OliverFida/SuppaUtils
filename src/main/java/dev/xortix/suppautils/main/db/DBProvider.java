@@ -2,14 +2,15 @@ package dev.xortix.suppautils.main.db;
 
 import dev.xortix.suppautils.main.log.Logger;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class DBProvider {
+public final class DBProvider {
     private static Connection CONNECTION;
-    public static Connection getCONNECTION() {
+    public static @NotNull Connection getCONNECTION() {
         return CONNECTION;
     }
 
