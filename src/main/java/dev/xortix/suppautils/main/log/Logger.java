@@ -73,5 +73,6 @@ public final class Logger {
         INITIALS,
         AFK,
         HOMES,
+        WARPS,
     }
 }

@@ -136,7 +136,7 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
         }
     }
 
-    private int handleCommandSetHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
+    private @NotNull Integer handleCommandSetHome(@NotNull CommandContext<ServerCommandSource> ctx, @NotNull Boolean useDefaultName) {
         try {
             if (checkFeatureEnabledForCommand(ctx) == Command.SINGLE_SUCCESS) return Command.SINGLE_SUCCESS;
             if (!checkSetHomeAllowedInDim(ctx)) return Command.SINGLE_SUCCESS;
@@ -202,7 +202,7 @@ public final class QolHomesFeatureProvider extends FeatureProviderBase {
             HomeEntry existingEntry = homes.stream().filter(h -> h.Name.equalsIgnoreCase(name)).findFirst().orElse(null);
             if (existingEntry == null) {
                 // Reject -> home does not exist
-                ctx.getSource().sendFeedback(() -> Text.literal("§cHome\"" + name + "\" existiert nicht."), false);
+                ctx.getSource().sendFeedback(() -> Text.literal("§cHome \"" + name + "\" existiert nicht."), false);
                 return Command.SINGLE_SUCCESS;
             }
 

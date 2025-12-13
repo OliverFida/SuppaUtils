@@ -1,10 +1,7 @@
 package dev.xortix.suppautils.main.db;
 
 import dev.xortix.suppautils.main.base.MigrationBase;
-import dev.xortix.suppautils.main.db.migrations.M20251124_2000_Init;
-import dev.xortix.suppautils.main.db.migrations.M20251124_2102_CreateTableInitials;
-import dev.xortix.suppautils.main.db.migrations.M20251206_0110_AlterTableInitials;
-import dev.xortix.suppautils.main.db.migrations.M20251206_1937_CreateTableHomes;
+import dev.xortix.suppautils.main.db.migrations.*;
 import dev.xortix.suppautils.main.log.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,6 +16,7 @@ public final class MigrationProvider {
             M20251124_2102_CreateTableInitials.class,
             M20251206_0110_AlterTableInitials.class,
             M20251206_1937_CreateTableHomes.class,
+            M20251213_1317_CreateTableWarps.class,
     };
 
     public static void applyInitialMigration() {

@@ -7,6 +7,7 @@ import dev.xortix.suppautils.main.features.qol.homes.QolHomesFeatureProvider;
 import dev.xortix.suppautils.main.features.qol.initials.QolInitialsFeatureProvider;
 import dev.xortix.suppautils.main.features.qol.spawn.QolSpawnFeatureProvider;
 import dev.xortix.suppautils.main.features.qol.tpa.QolTpaFeatureProvider;
+import dev.xortix.suppautils.main.features.qol.warps.QolWarpsFeatureProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,10 +36,9 @@ public class FeaturesManager {
         Features.put(FEATURE.QOL_SPAWN, feature);
         feature.init();
 
-        // OFDO: WARPS
-        // feature = new QolWarpsFeatureProvider();
-        // Features.put(FEATURE.QOL_WARPS, feature);
-        // feature.init();
+         feature = new QolWarpsFeatureProvider();
+         Features.put(FEATURE.QOL_WARPS, feature);
+         feature.init();
 
          feature = new QolTpaFeatureProvider();
          Features.put(FEATURE.QOL_TPA, feature);
