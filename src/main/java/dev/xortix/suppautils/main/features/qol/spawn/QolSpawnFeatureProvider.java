@@ -86,7 +86,6 @@ public class QolSpawnFeatureProvider extends FeatureProviderBase {
 
                                 TeleportHelper.teleportPlayer(ctx, configDim.Value, configX.Value, configY.Value, configZ.Value, configPitch.Value, configYaw.Value);
 
-                                ctx.getSource().sendFeedback(() -> Text.literal("§aSpawnpunkt gesetzt."), false);
                                 return Command.SINGLE_SUCCESS;
                             } catch (Exception ex) {
                                 return handleCommandException(ex);
